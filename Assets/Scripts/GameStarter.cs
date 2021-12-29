@@ -20,6 +20,19 @@ public class GameStarter : MonoBehaviour
 
     private void Start()
     {
+        // search for old game starter objects
+        GameStarter[] gameStarters = FindObjectsOfType<GameStarter>();
+        for(int i = 0; i < gameStarters.Length; i++)
+        {
+            // if you find one that is not the current one
+            if(gameStarters[i] != this)
+            {
+                // copy over attributes and remove it
+                this.mods = gameStarters[i].mods;
+                this.loadedLevel = gameStarters[i].loadedLevel;
+                Destroy(gameStarters[i].gameObject);
+            }
+        }
         Instance = this; // store instance to this script
     }
 
