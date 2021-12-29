@@ -4,11 +4,8 @@ Osu inspired Japanese reading game
 ## How To Use
 
 The program will start by loading the kanjis from an internal xml file. Then it will proceed loading input method files from the InputMethods/ folder and levels from the Levels/ folder.
-After successfully loading these it will proceed into the level select screen. You can click the levels to start playing them.
-
-### Closing The Game
-
-Currently there's no button to close the game. It is recommended to use Alt+F4. Obviously, this will be changed in the future.
+After successfully loading these it will proceed into the main menu to allow you to change settings or start playing.
+When starting to play you are greeted by a level select menu where you can select loaded levels and start playing them.
 
 ### How Input Works
 The game tracks basic ASCII input characters and then converts the input to hiragana. The actual input is now visible.
