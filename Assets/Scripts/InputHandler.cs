@@ -121,12 +121,21 @@ public class InputHandler : MonoBehaviour
             {
                 handleEnter();
             }
+            else if(Input.GetKeyDown(KeyCode.Escape))
+            {
+                ScriptGameManager.PauseGame(!ScriptGameManager.IsPaused());
+            }
         }
     }
 
     // handles any ASCII character input
     void handleInput(char character)
     {
+        if(ScriptGameManager.IsPaused())
+        {
+            return;
+        }
+
         // if japanese keyboard input
         if(false)
         {
@@ -154,7 +163,12 @@ public class InputHandler : MonoBehaviour
     // handles backspace, deletes characters if there are any
     void handleBackspace()
     {
-        if(currentInput.Length > 0)
+        if (ScriptGameManager.IsPaused())
+        {
+            return;
+        }
+
+        if (currentInput.Length > 0)
         {
             currentInput = currentInput.Substring(0, currentInput.Length - 1);
             TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput));
@@ -164,6 +178,11 @@ public class InputHandler : MonoBehaviour
     // handles enter
     void handleEnter()
     {
+        if (ScriptGameManager.IsPaused())
+        {
+            return;
+        }
+
         // if the game is running
         if (ScriptGameManager.IsRunning())
         {

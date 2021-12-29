@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     // UI menues to hide/show
     public GameObject OverlayRunning;
     public GameObject OverlayDone;
+    public GameObject PauseMenu;
 
     // UI elemnts to update in running menu
     public TMPro.TMP_Text TextScore;
@@ -47,6 +48,7 @@ public class GameManager : MonoBehaviour
     private float hitRate;              // sloppy + correct kanji
     private int maxCombo;               // the highest the combo has been
     private bool running;               // whether or not the game is running
+    private bool paused;                // whether or not the game is paused
 
     // Start is called before the first frame update
     void Start()
@@ -65,8 +67,18 @@ public class GameManager : MonoBehaviour
         // don't show end screen, show game screen
         OverlayDone.SetActive(false);
         OverlayRunning.SetActive(true);
+        PauseMenu.SetActive(false);
         // pre setup the UI
         updateUI();
+    }
+
+    /**
+     * Suspends the game
+     */
+    public void PauseGame(bool pause)
+    {
+        paused = pause;
+        PauseMenu.SetActive(pause);
     }
 
     /**
@@ -134,26 +146,34 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            // reset the game
-            score = 0;
-            correctKanji = 0;
-            sloppyKanji = 0;
-            missedKanji = 0;
-            combo = 0;
-            accuracy = 0;
-            hitRate = 0;
-            maxCombo = 0;
-            // update UI
-            updateUI();
-
-            // change menu
-            OverlayDone.SetActive(false);
-            OverlayRunning.SetActive(true);
-            // set the game as running
-            running = true;
-            // leave to main menu
-            SceneManager.LoadScene("LevelSelect");
+            EndGame();  
         }
+    }
+
+    /**
+     * Ends the game, cleans up and returns to level select
+     */
+    public void EndGame()
+    {
+        // reset the game
+        score = 0;
+        correctKanji = 0;
+        sloppyKanji = 0;
+        missedKanji = 0;
+        combo = 0;
+        accuracy = 0;
+        hitRate = 0;
+        maxCombo = 0;
+        // update UI
+        updateUI();
+
+        // change menu
+        OverlayDone.SetActive(false);
+        OverlayRunning.SetActive(true);
+        // set the game as running
+        running = true;
+        // leave to main menu
+        SceneManager.LoadScene("LevelSelect");
     }
 
     /**
@@ -170,6 +190,14 @@ public class GameManager : MonoBehaviour
     public bool IsRunning()
     {
         return running;
+    }
+
+    /**
+     * Returns whether or not the game is paused
+     */
+    public bool IsPaused()
+    {
+        return paused;
     }
 
     // returns the rank given your accuracy, hitrate and missed kanji's
