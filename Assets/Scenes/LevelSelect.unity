@@ -355,10 +355,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 408393353}
+        m_TargetAssemblyTypeName: LevelSelectManager, Assembly-CSharp
+        m_MethodName: OpenPreviousScene
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1002,7 +1002,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8f8e1ec7cab8c4493abc13125a246c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MenuExit: {fileID: 0}
   GameStarter: {fileID: 0}
 --- !u!1 &442533642
 GameObject:
