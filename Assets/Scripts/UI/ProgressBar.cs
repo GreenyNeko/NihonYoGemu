@@ -24,7 +24,6 @@ public class ProgressBar : MonoBehaviour
 
     void Start()
     {
-
     }
 
     //[ExecuteInEditMode]
@@ -57,6 +56,7 @@ public class ProgressBar : MonoBehaviour
         {
             // change the anchor to scale it down
             ImageFill.transform.GetComponent<RectTransform>().anchorMax = new Vector2(((float)Value / MaxValue), 1);
+            ImageFill.transform.localPosition = new Vector3(0, 0, 0);
         }
         else
         {

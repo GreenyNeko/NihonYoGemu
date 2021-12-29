@@ -775,11 +775,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 198635e7eecbff24d9dfe887a1cf25a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textLevelName: {fileID: 3607937855399536460}
-  textAuthorName: {fileID: 6428509018118467080}
-  difficultySlider: {fileID: 1051795425424204701}
-  warning: {fileID: 4551869834666768488}
-  tooltip: {fileID: 4955149654465126014}
+  TextLevelName: {fileID: 3607937855399536460}
+  TextAuthorName: {fileID: 6428509018118467080}
+  DifficultySliderFill: {fileID: 1051795425424204701}
+  Warning: {fileID: 4551869834666768488}
+  Tooltip: {fileID: 4955149654465126014}
+  LevelFinder: {fileID: 0}
 --- !u!1 &7764871525921630201
 GameObject:
   m_ObjectHideFlags: 0

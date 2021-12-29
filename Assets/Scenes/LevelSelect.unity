@@ -154,8 +154,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fd590757fa8377488f7feeb1bb2a28b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textScoreMultiplier: {fileID: 15755917}
-  gameStarter: {fileID: 462016903}
+  TMP_TextScoreMultiplier: {fileID: 15755917}
+  GameStarter: {fileID: 462016903}
 --- !u!114 &15755917
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2569,8 +2569,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 478b660c495804449b9d1247ef7dfadc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mod: -1
-  gameStarter: {fileID: 462016903}
+  Mod: -1
+  ScriptGameStarter: {fileID: 462016903}
 --- !u!1 &1512090617
 GameObject:
   m_ObjectHideFlags: 0

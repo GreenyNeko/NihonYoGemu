@@ -12,7 +12,7 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
 {
     public TMP_Text TextLevelName;  // the text element that shows the name
     public TMP_Text TextAuthorName; // the text element that shows the author name
-    public Image DifficultySlider;  // the image element that controls the difficulty slider
+    public Image DifficultySliderFill;  // the image element that controls the difficulty slider
     public Image Warning;           // the image element showing if a warning occured
     public GameObject Tooltip;      // the tooltip element showing the warning message
     bool flaggedForSentenceTooLong; // whether or not the sentence too long error occured
@@ -70,7 +70,7 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
      */
     public void SetDifficulty(float difficulty)
     {
-        DifficultySlider.fillAmount = difficulty / 10;
+        DifficultySliderFill.fillAmount = difficulty / 10;
     }
 
     /**

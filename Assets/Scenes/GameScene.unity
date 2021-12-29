@@ -266,10 +266,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfda9a7e8c5d7c7408986f7208dcf686, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sentencesOutput: {fileID: 1530045837}
-  furiganas: {fileID: 1352194440}
-  gameManager: {fileID: 52873477}
-  furiganaPrefab: {fileID: 308181701199735818, guid: a9b54555eccfb7d48b75b665217ed41e,
+  SentencesOutput: {fileID: 1530045837}
+  Furiganas: {fileID: 1352194440}
+  ScriptGameManager: {fileID: 52873477}
+  FuriganaPrefab: {fileID: 308181701199735818, guid: a9b54555eccfb7d48b75b665217ed41e,
     type: 3}
 --- !u!4 &52873475
 Transform:
@@ -297,9 +297,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d5ac76932ab0da4c9fc224d24da5b71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameManager: {fileID: 52873477}
-  levelManager: {fileID: 52873473}
-  textDisplay: {fileID: 1599367044}
+  ScriptGameManager: {fileID: 52873477}
+  LevelManager: {fileID: 52873473}
+  TextDisplay: {fileID: 1599367044}
 --- !u!114 &52873477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -312,20 +312,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73bd50bca47f65a488f6f292530d3554, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overlayRunning: {fileID: 1469503}
-  overlayDone: {fileID: 956787599}
-  textScore: {fileID: 1182982063}
-  textAccuracy: {fileID: 1873465052}
-  textRank: {fileID: 1229304282}
-  textCombo: {fileID: 1735471745}
-  textEndRank: {fileID: 121801395}
-  textEndScore: {fileID: 1254294121}
-  textEndCorrect: {fileID: 1678718586}
-  textEndSloppy: {fileID: 1626534483}
-  textEndMiss: {fileID: 1525049726}
-  textEndCombo: {fileID: 1814739124}
-  textEndAccuracy: {fileID: 916205851}
-  historyHandler: {fileID: 900230283}
+  OverlayRunning: {fileID: 1469503}
+  OverlayDone: {fileID: 956787599}
+  TextScore: {fileID: 1182982063}
+  TextAccuracy: {fileID: 1873465052}
+  TextRank: {fileID: 1229304282}
+  TextCombo: {fileID: 1735471745}
+  TextEndRank: {fileID: 1671401542}
+  TextEndScore: {fileID: 1254294121}
+  TextEndCorrect: {fileID: 1678718586}
+  TextEndSloppy: {fileID: 1626534483}
+  TextEndMiss: {fileID: 1525049726}
+  TextEndCombo: {fileID: 1814739124}
+  TextEndAccuracy: {fileID: 916205851}
+  ScriptHistoryHandler: {fileID: 900230283}
 --- !u!1 &101550533
 GameObject:
   m_ObjectHideFlags: 0
@@ -1892,7 +1892,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c80a02dea97951429eebf1b3d42aad5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitVisualizer:
+  HitVisualizer:
   - {fileID: 1272885169}
   - {fileID: 1134236127}
   - {fileID: 358546327}
@@ -1908,10 +1908,10 @@ MonoBehaviour:
   - {fileID: 812899723}
   - {fileID: 1792955503}
   - {fileID: 1821507291}
-  colorDef: {r: 0.05660379, g: 0.05660379, b: 0.05660379, a: 1}
-  colorCorrect: {r: 0.14664115, g: 0.8113208, b: 0.08036668, a: 1}
-  colorSloppy: {r: 0.7924528, g: 0.7511014, b: 0.13082945, a: 1}
-  colorMiss: {r: 0.8396226, g: 0.08317016, b: 0.08317016, a: 1}
+  ColorDef: {r: 0.254717, g: 0.254717, b: 0.254717, a: 1}
+  ColorCorrect: {r: 0, g: 1, b: 0, a: 1}
+  ColorSloppy: {r: 1, g: 1, b: 0, a: 1}
+  ColorMiss: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &916205849
 GameObject:
   m_ObjectHideFlags: 0
