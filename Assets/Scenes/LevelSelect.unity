@@ -1387,6 +1387,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5806c662c8617ea46b6936d6a68f60fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  TextScoreMultiplierScript: {fileID: 15755916}
+  ModToggleScript: {fileID: 1473404832}
 --- !u!4 &462016904
 Transform:
   m_ObjectHideFlags: 0

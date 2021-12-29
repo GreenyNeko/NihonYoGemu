@@ -8,6 +8,10 @@ using UnityEngine.SceneManagement;
  */
 public class GameStarter : MonoBehaviour
 {
+    // used to update UI elemnets on start
+    public TextScoreMultiplier TextScoreMultiplierScript;
+    public ModToggle ModToggleScript;
+
     GameMods mods;                      // which mods are active
     Level loadedLevel;                  // the level information needed for the game
 
@@ -30,6 +34,9 @@ public class GameStarter : MonoBehaviour
                 // copy over attributes and remove it
                 this.mods = gameStarters[i].mods;
                 this.loadedLevel = gameStarters[i].loadedLevel;
+                // update ui elements accordingly
+                TextScoreMultiplierScript.UpdateScoreMultiplier();
+                ModToggleScript.UpdateButtonState();
                 Destroy(gameStarters[i].gameObject);
             }
         }
