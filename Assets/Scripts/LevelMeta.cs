@@ -8,6 +8,9 @@ using System.IO;
  */
 public class LevelMeta
 {
+    // used to find file differences
+    public const string Version = "1";
+    
     string name;                // file name
     string author;              // level author
     float difficulty;           // level difficulty
@@ -112,6 +115,7 @@ public class LevelMeta
         // create the file in the system
         using (StreamWriter streamWriter = new StreamWriter("Levels/" + levelMeta.name + ".nyl.meta"))
         {
+            streamWriter.Write("NYLMv" + Version);
             streamWriter.Write("d" + (Mathf.Round(levelMeta.difficulty * 100) / 100).ToString() + "l" + levelMeta.totalCharacters.ToString() + "k" + levelMeta.totalKanjis.ToString());
             streamWriter.Write("s" + levelMeta.longestSentence.ToString() + "a_" + levelMeta.author);
         }

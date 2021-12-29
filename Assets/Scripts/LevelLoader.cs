@@ -118,6 +118,19 @@ public class LevelLoader : MonoBehaviour
             {
                 // load data from file
                 string metaData = streamReader.ReadToEnd();
+                // check meta tag
+                if(!metaData.StartsWith("NYLM"))
+                {
+                    // file corrupt or not a valid nihonyolevel meta
+                    // skip this file
+                    continue;
+                }
+                
+                if(metaData.Substring(metaData.IndexOf('v'), 1) == LevelMeta.Version)
+                {
+                    // skip this file
+                    continue;
+                }
                 float difficulty = float.Parse(metaData.Substring(metaData.IndexOf('d') + 1, metaData.IndexOf('l') - metaData.IndexOf('d') - 1));
                 string author = metaData.Substring(metaData.IndexOf("a_") + 2);
                 int levelLength = int.Parse(metaData.Substring(metaData.IndexOf('l') + 1, metaData.IndexOf('k') - metaData.IndexOf('l') - 1));
