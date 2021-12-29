@@ -126,6 +126,7 @@ public class Level
             // store the kanjjis
             kanjiPerSentence.Add(kanjis);
         }
+        kanjiCount = totalKanjiCount;
         // derive final stats from analysis
         kanjiDifficulty = totalKanjiDifficulty / kanjiCount;            // average kanji difficulty
         kanjiCount = totalKanjiCount;                                   // number of kanjis in file
