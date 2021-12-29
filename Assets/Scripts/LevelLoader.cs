@@ -136,7 +136,6 @@ public class LevelLoader : MonoBehaviour
                 int levelLength = int.Parse(metaData.Substring(metaData.IndexOf('l') + 1, metaData.IndexOf('k') - metaData.IndexOf('l') - 1));
                 int kanjiCount = int.Parse(metaData.Substring(metaData.IndexOf('k') + 1, metaData.IndexOf('s') - metaData.IndexOf('k') - 1));
                 int sentenceLength = int.Parse(metaData.Substring(metaData.IndexOf('s') + 1, metaData.IndexOf('a') - metaData.IndexOf('s') - 1));
-                // create the data structure and store it
                 LevelMeta levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength);
                 levelMetas.Add(levelMeta);
             }

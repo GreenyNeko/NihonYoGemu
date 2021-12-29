@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelSelectManager : MonoBehaviour
 {
-    public GameObject MenuExit;
+    public GameObject GameStarter;
     // Start is called before the first frame update
     void Start()
     {
@@ -14,18 +15,20 @@ public class LevelSelectManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // open exit menu when escape is pressed (shortcut)
+        // goes to previous scene when escape is pressed
         if(Input.GetKeyDown(KeyCode.Escape))
         {
-            MenuExit.SetActive(true);
+            OpenPreviousScene();
         }
     }
 
     /**
-     * Used to tell the game to close
+     * Used to go to the main menu
      */
-    public void EndGame()
+    public void OpenPreviousScene()
     {
-        Application.Quit();
+        // remove to prevent memory leak
+        Destroy(GameStarter);
+        SceneManager.LoadScene("MainMenu");
     }
 }

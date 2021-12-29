@@ -76,6 +76,6 @@ public class LoadingManager : MonoBehaviour
             }
             yield return 0; // give control back to the program
         }
-        SceneManager.LoadScene("LevelSelect");
+        SceneManager.LoadScene("MainMenu");
     }
 }
