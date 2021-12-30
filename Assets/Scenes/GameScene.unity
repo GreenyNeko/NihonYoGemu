@@ -319,7 +319,7 @@ MonoBehaviour:
   TextAccuracy: {fileID: 1873465052}
   TextRank: {fileID: 1229304282}
   TextCombo: {fileID: 1735471745}
-  TextEndRank: {fileID: 1671401542}
+  TextEndRank: {fileID: 121801395}
   TextEndScore: {fileID: 1254294121}
   TextEndCorrect: {fileID: 1678718586}
   TextEndSloppy: {fileID: 1626534483}
@@ -327,6 +327,8 @@ MonoBehaviour:
   TextEndCombo: {fileID: 1814739124}
   TextEndAccuracy: {fileID: 916205851}
   ScriptHistoryHandler: {fileID: 900230283}
+  LevelName: 
+  Mods: 0
 --- !u!1 &101550533
 GameObject:
   m_ObjectHideFlags: 0
