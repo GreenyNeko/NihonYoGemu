@@ -9,14 +9,29 @@ public class UILevelLister : MonoBehaviour
 {
     public Transform UILevelParent;     // where to instantiate them to
     public GameObject UILevelPrefab;    // the prefab used to create new elements
+    
     List<GameObject> uiLevelObjects;    // a reference to all objects created
+    int idCurrentlySelected;            // the id of the gameobject that is currently selected
 
     // Start is called before the first frame update
     void Start()
     {
         // init list
         uiLevelObjects = new List<GameObject>();
+        idCurrentlySelected = -1;
         createUILevelObjects();
+    }
+
+    /**
+     * 
+     */
+    public void FlagLevelAsSelected(GameObject level)
+    {
+        if(idCurrentlySelected >= 0)
+        {
+            uiLevelObjects[idCurrentlySelected].GetComponent<UILevel>().Unselect();
+        }
+        idCurrentlySelected = uiLevelObjects.IndexOf(level);
     }
 
     /**

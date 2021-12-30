@@ -775,6 +775,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 198635e7eecbff24d9dfe887a1cf25a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  colorUnselected: {r: 0.6509434, g: 0.29783732, b: 0.4430664, a: 1}
+  colorSelected: {r: 0.9675523, g: 0.5137255, b: 1, a: 1}
+  Panel: {fileID: 7269024369264280744}
   TextLevelName: {fileID: 3607937855399536460}
   TextAuthorName: {fileID: 6428509018118467080}
   DifficultySliderFill: {fileID: 1051795425424204701}

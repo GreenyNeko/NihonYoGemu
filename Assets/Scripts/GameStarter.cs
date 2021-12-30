@@ -14,6 +14,7 @@ public class GameStarter : MonoBehaviour
 
     GameMods mods;                      // which mods are active
     Level loadedLevel;                  // the level information needed for the game
+    string selectedLevelName;           // the level selected to be played
 
     // the instance to itself, allowing other scripts to easily access it
     public static GameStarter Instance
@@ -43,17 +44,27 @@ public class GameStarter : MonoBehaviour
         Instance = this; // store instance to this script
     }
 
+    public void SetLevelByName(string name)
+    {
+        selectedLevelName = name;
+    }
+
     /**
      * Start the level loading the input file and level and load the game
      */
-    public void StartLevel(string levelName)
+    public void StartLevel()
     {
+        if(selectedLevelName == null || selectedLevelName == "")
+        {
+            // no level selected
+            return;
+        }
         // now load the selected input method
         JapaneseDictionary.CreateKanaFromInputFileId(0);
         // make the object persist into the next scene
         DontDestroyOnLoad(gameObject);
         // get the level that should be started
-        loadedLevel = LevelLoader.LoadLevelByName(levelName);
+        loadedLevel = LevelLoader.LoadLevelByName(selectedLevelName);
         if(loadedLevel == null)
         {
             Debug.LogWarning("Unable to load level");
