@@ -45,7 +45,7 @@ public class UILevelLister : MonoBehaviour
             uiLevel.SetDifficulty(meta.GetDifficulty());
             uiLevel.LevelFinder = this;
             // flag if level sentence too long
-            uiLevel.SetForSentenceTooLong(meta.GetLongestSentenceLength() > 96);
+            uiLevel.SetParserResult(meta.GetParserResult());
             // place the ui object at the right spot in the content view
             UILevelObject.transform.localPosition += new Vector3(0, -100 * i, 0);
             // store reference

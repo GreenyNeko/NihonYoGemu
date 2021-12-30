@@ -9,7 +9,7 @@ using System.IO;
 public class LevelMeta
 {
     // used to find file differences
-    public const string Version = "1";
+    public const string Version = "2";
     
     string name;                // file name
     string author;              // level author
@@ -17,6 +17,7 @@ public class LevelMeta
     int totalCharacters;        // total characters in the level
     int totalKanjis;            // total kanjis in the level
     int longestSentence;        // the longest sentence
+    int parserResult;           // the result of the level parsing
 
     // private constructor, to create levelmetas without information first internally
     private LevelMeta()
@@ -27,12 +28,13 @@ public class LevelMeta
         totalCharacters = 0;
         totalKanjis = 0;
         longestSentence = 0;
+        parserResult = 0;
     }
 
     /**
      * Create a new level meta given necessary parameters
      */
-    public LevelMeta(string name, float difficulty, int totalCharacters, int totalKanjis, string author, int longestSentence)
+    public LevelMeta(string name, float difficulty, int totalCharacters, int totalKanjis, string author, int longestSentence, int parserResult)
     {
         this.name = name;
         this.difficulty = difficulty;
@@ -40,6 +42,7 @@ public class LevelMeta
         this.totalKanjis = totalKanjis;
         this.author = author;
         this.longestSentence = longestSentence;
+        this.parserResult = parserResult;
     }
 
     /**
@@ -99,6 +102,14 @@ public class LevelMeta
     }
 
     /**
+     * Returns the result of the parsing stored in the meta data
+     */
+    public int GetParserResult()
+    {
+        return parserResult;
+    }
+
+    /**
      * Creates a levelmeta given a level
      */
     public static LevelMeta CreateFromLevel(Level level)
@@ -112,12 +123,13 @@ public class LevelMeta
         levelMeta.totalKanjis = level.GetKanjiCount();
         levelMeta.author = level.Author;
         levelMeta.longestSentence = level.GetLongestSentenceLength();
+        levelMeta.parserResult = level.ParseLevel();
         // create the file in the system
         using (StreamWriter streamWriter = new StreamWriter("Levels/" + levelMeta.name + ".nyl.meta"))
         {
             streamWriter.Write("NYLMv" + Version);
             streamWriter.Write("d" + (Mathf.Round(levelMeta.difficulty * 100) / 100).ToString() + "l" + levelMeta.totalCharacters.ToString() + "k" + levelMeta.totalKanjis.ToString());
-            streamWriter.Write("s" + levelMeta.longestSentence.ToString() + "a_" + levelMeta.author);
+            streamWriter.Write("s" + levelMeta.longestSentence.ToString() + "p" + levelMeta.parserResult.ToString() + "a_" + levelMeta.author);
         }
         return levelMeta;
     }

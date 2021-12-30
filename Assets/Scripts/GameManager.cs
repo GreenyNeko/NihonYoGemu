@@ -47,11 +47,11 @@ public class GameManager : MonoBehaviour
     private float accuracy;             // % given the correct, sloppy and missed kanji
     private float hitRate;              // sloppy + correct kanji
     private int maxCombo;               // the highest the combo has been
-    private bool running;               // whether or not the game is running
+    private bool running = true;        // whether or not the game is running
     private bool paused;                // whether or not the game is paused
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         // init
         Instance = this;
@@ -63,7 +63,6 @@ public class GameManager : MonoBehaviour
         accuracy = 0;
         hitRate = 0;
         maxCombo = 0;
-        running = true;
         // don't show end screen, show game screen
         OverlayDone.SetActive(false);
         OverlayRunning.SetActive(true);

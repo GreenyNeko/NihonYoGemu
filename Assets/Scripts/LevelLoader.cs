@@ -39,7 +39,7 @@ public class LevelLoader : MonoBehaviour
             while (!streamReader.EndOfStream)
             {
                 string line = streamReader.ReadLine();
-                if (line[0] == '[')
+                if (line.StartsWith("["))
                 {
                     if (line.Substring(1, line.IndexOf('=') - 1) == "author")
                     {
@@ -73,7 +73,7 @@ public class LevelLoader : MonoBehaviour
             while (!streamReader.EndOfStream)
             {
                 string line = streamReader.ReadLine();
-                if (line[0] == '[')
+                if (line.StartsWith("["))
                 {
                     if (line.Substring(1, line.IndexOf('=') - 1) == "author")
                     {
@@ -126,17 +126,19 @@ public class LevelLoader : MonoBehaviour
                     continue;
                 }
                 
-                if(metaData.Substring(metaData.IndexOf('v'), 1) == LevelMeta.Version)
+                if(metaData.Substring(metaData.IndexOf('v') + 1, 1) != LevelMeta.Version)
                 {
-                    // skip this file
+                    // skip this file if the version mismatches with the current
+                    // this forces a creationg of a new meta file
                     continue;
                 }
                 float difficulty = float.Parse(metaData.Substring(metaData.IndexOf('d') + 1, metaData.IndexOf('l') - metaData.IndexOf('d') - 1));
                 string author = metaData.Substring(metaData.IndexOf("a_") + 2);
                 int levelLength = int.Parse(metaData.Substring(metaData.IndexOf('l') + 1, metaData.IndexOf('k') - metaData.IndexOf('l') - 1));
                 int kanjiCount = int.Parse(metaData.Substring(metaData.IndexOf('k') + 1, metaData.IndexOf('s') - metaData.IndexOf('k') - 1));
-                int sentenceLength = int.Parse(metaData.Substring(metaData.IndexOf('s') + 1, metaData.IndexOf('a') - metaData.IndexOf('s') - 1));
-                LevelMeta levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength);
+                int sentenceLength = int.Parse(metaData.Substring(metaData.IndexOf('s') + 1, metaData.IndexOf('p') - metaData.IndexOf('s') - 1));
+                int parserResult = int.Parse(metaData.Substring(metaData.IndexOf('p') + 1, metaData.IndexOf('a') - metaData.IndexOf('p') - 1));
+                LevelMeta levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, parserResult);
                 levelMetas.Add(levelMeta);
             }
             // return progress
@@ -165,7 +167,7 @@ public class LevelLoader : MonoBehaviour
                             continue;
                         }
                         // handle attribute tags
-                        if (line[0] == '[')
+                        if (line.StartsWith("["))
                         {
                             if (line.Substring(1, line.IndexOf('=') - 1) == "author")
                             {

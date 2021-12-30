@@ -136,6 +136,33 @@ public class Level
     }
 
     /**
+     * Parses the given level and returns a result code
+     * 0 - no errors
+     * 1 - sentence too long
+     * 2 - Furigana and kanji mismatch
+     */
+    public int ParseLevel()
+    {
+        // the sentences are too long to be displayed on all supported screens
+        if(longestSentence > 96)
+        {
+            return 1;
+        }
+        int furiganas = furigana.Count;
+        for(int i = 0; i < sentences.Count; i++)
+        {
+            //furiganas -= kanjiPerSentence[i].Length;
+            // we have more kanjis appear than there are furigana solutions
+        }
+        if (furiganas < kanjiCount)
+        {
+            return 2;
+        }
+        // no errors occured
+        return 0;
+    }
+
+    /**
      * Returns how many kanjis are in the level
      */
     public int GetKanjiCount()
