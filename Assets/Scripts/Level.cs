@@ -128,11 +128,11 @@ public class Level
         }
         kanjiCount = totalKanjiCount;
         // derive final stats from analysis
-        kanjiDifficulty = totalKanjiDifficulty / kanjiCount;            // average kanji difficulty
-        kanjiCount = totalKanjiCount;                                   // number of kanjis in file
-        totalCharacters = otherCharacters + kanjiCount;                 // total amount of characters
-        float kanjiRate = (float)kanjiCount / totalCharacters;          // how often do kanjis occur?
-        levelDifficulty = kanjiDifficulty * (1 + (kanjiRate-0.5f)*2);   // calculate the levels difficulty
+        kanjiDifficulty = (kanjiCount == 0) ? 0 : totalKanjiDifficulty / kanjiCount;        // average kanji difficulty
+        kanjiCount = totalKanjiCount;                                                       // number of kanjis in file
+        totalCharacters = otherCharacters + kanjiCount;                                     // total amount of characters
+        float kanjiRate = (totalCharacters == 0) ? 0 : (float)kanjiCount / totalCharacters; // how often do kanjis occur?
+        levelDifficulty = kanjiDifficulty * (1 + (kanjiRate-0.5f)*2);                       // calculate the levels difficulty
     }
 
     /**
