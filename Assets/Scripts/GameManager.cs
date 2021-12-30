@@ -38,6 +38,11 @@ public class GameManager : MonoBehaviour
     // history handler to update the history visualizer
     public HistoryHandler ScriptHistoryHandler;
 
+    [HideInInspector]
+    public string LevelName;            // stores the level name for which the highscore should be saved
+    [HideInInspector]
+    public GameMods Mods;               // stores the mods of the game manager
+
     private float scoreMultiplier = 1f; // multiplies the score given the games mods
     private int score;                  // keep track of players score
     private int correctKanji;           // keep track of how many kanji are read correctly
@@ -154,6 +159,8 @@ public class GameManager : MonoBehaviour
      */
     public void EndGame()
     {
+        // save highscore
+        SaveHighscore(LevelName);
         // reset the game
         score = 0;
         correctKanji = 0;
@@ -199,16 +206,67 @@ public class GameManager : MonoBehaviour
         return paused;
     }
 
-    // returns the rank given your accuracy, hitrate and missed kanji's
-    private string getRank()
+    // saves this highscore that was just performed
+    private void SaveHighscore(string levelName)
     {
-        if (accuracy == 1) return "SS";
-        else if (accuracy > 0.9 && missedKanji == 0) return "S";
-        else if (accuracy > 0.9 && hitRate > 0.8) return "A";
-        else if (accuracy > 0.8 && hitRate > 0.6) return "B";
-        else if (accuracy > 0.6 && hitRate > 0.4) return "C";
-        else if (accuracy > 0.4) return "D";
-        return " ";
+        // get the leaderboard from file
+        Leaderboard leaderboard = Leaderboard.LoadLeaderboardByName(levelName);
+        // couldn't load because file doesn't exist
+        if(leaderboard == null)
+        {
+            // create a new leaderboard
+            leaderboard = new Leaderboard(); 
+        }
+        // store the highscore
+        var highScore = new Leaderboard.HighScore();
+        highScore.score = (uint)score;
+        highScore.accuracy = Mathf.Round(accuracy*10000) / 100.0f;
+        highScore.combo = (ushort)combo;
+        highScore.sloppy = (ushort)sloppyKanji;
+        highScore.miss = (ushort)missedKanji;
+        highScore.correct = (ushort)correctKanji;
+        highScore.mods = Mods;
+        highScore.username = "Fluffles";
+        highScore.rank = (sbyte)getRank();
+        highScore.timestamp = (ulong)System.DateTimeOffset.Now.UtcTicks;
+        leaderboard.Add(highScore);
+        // save the leaderboard to drive
+        leaderboard.Save(levelName);
+    }
+
+    // returns the string representation of the ranks instead of the internal integers
+    private string getRankString()
+    {
+        switch(getRank())
+        {
+            case 6:
+                return "SS";
+            case 5:
+                return "S";
+            case 4:
+                return "A";
+            case 3:
+                return "B";
+            case 2:
+                return "C";
+            case 1:
+                return "D";
+            default:
+                return "";
+        }
+
+    }
+
+    // returns the rank given the players performance
+    private int getRank()
+    {
+        if (accuracy == 1) return 6;
+        else if (accuracy > 0.9 && missedKanji == 0) return 5;
+        else if (accuracy > 0.9 && hitRate > 0.8) return 4;
+        else if (accuracy > 0.8 && hitRate > 0.6) return 3;
+        else if (accuracy > 0.6 && hitRate > 0.4) return 2;
+        else if (accuracy > 0.4) return 1;
+        return 0;
     }
 
     // updates the accuracy and hitrate
@@ -229,7 +287,7 @@ public class GameManager : MonoBehaviour
         }
         // updates UI elements
         TextScore.SetText(strScore);
-        TextRank.SetText(getRank());
+        TextRank.SetText(getRankString());
         TextAccuracy.SetText((accuracy * 100).ToString("F2") + "%");
         TextCombo.SetText(combo.ToString() + "x");
     }
@@ -245,7 +303,7 @@ public class GameManager : MonoBehaviour
         }
         if (missedKanji == 0) maxCombo = combo;
         // updates UI elements
-        TextEndRank.SetText(getRank());
+        TextEndRank.SetText(getRankString());
         TextEndScore.SetText(strScore);
         TextEndCorrect.SetText(correctKanji.ToString() + "x");
         TextEndSloppy.SetText(sloppyKanji.ToString() + "x");

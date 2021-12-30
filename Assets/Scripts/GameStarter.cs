@@ -92,6 +92,14 @@ public class GameStarter : MonoBehaviour
     }
 
     /**
+     * Returns which game mods have been set
+     */
+    public GameMods GetGameMods()
+    {
+        return mods;
+    }
+
+    /**
      * Returns whether or not the given mod is active
      */
     public bool HasMod(GameMods mod)

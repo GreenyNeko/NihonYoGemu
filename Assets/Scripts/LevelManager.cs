@@ -40,6 +40,8 @@ public class LevelManager : MonoBehaviour
                 Instantiate(FuriganaPrefab, Furiganas.transform);
             }
         }
+        ScriptGameManager.LevelName = gameStarter.GetLevel().Name;
+        ScriptGameManager.Mods = gameStarter.GetGameMods();
         // level is completed by default
         if (gameStarter.GetLevel().GetSentenceCount() <= 0)
         {
