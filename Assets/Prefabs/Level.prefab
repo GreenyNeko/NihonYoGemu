@@ -581,7 +581,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8607277563876718174}
         m_TargetAssemblyTypeName: Tooltip, Assembly-CSharp
-        m_MethodName: Toggle
+        m_MethodName: SetVisibility
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
