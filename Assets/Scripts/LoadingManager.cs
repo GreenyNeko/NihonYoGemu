@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 /**
  * This script loads all the game data needed globally in the game
@@ -16,7 +17,24 @@ public class LoadingManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        CreateNecessaryFolders();
         StartCoroutine("loadData");
+    }
+
+    private void CreateNecessaryFolders()
+    {
+        if(!Directory.Exists("Levels"))
+        {
+            Directory.CreateDirectory("Levels");
+        }
+        if(!Directory.Exists("Scores"))
+        {
+            Directory.CreateDirectory("Scores");
+        }
+        if(!Directory.Exists("InputMethods"))
+        {
+            Directory.CreateDirectory("InputMethods");
+        }
     }
 
     // Coroutine to load all data required by the program
