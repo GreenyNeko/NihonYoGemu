@@ -131,6 +131,14 @@ public class Leaderboard
     }
 
     /**
+     * Returns amounts of highscores the leaderboard has
+     */
+    public int Count()
+    {
+        return highScores.Count;
+    }
+
+    /**
      * Gets the highscore at index from leaderboard
      */
     public HighScore this[int idx]

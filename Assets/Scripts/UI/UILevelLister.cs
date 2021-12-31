@@ -7,8 +7,9 @@ using UnityEngine;
  */
 public class UILevelLister : MonoBehaviour
 {
-    public Transform UILevelParent;     // where to instantiate them to
-    public GameObject UILevelPrefab;    // the prefab used to create new elements
+    public Transform UILevelParent;             // where to instantiate them to
+    public GameObject UILevelPrefab;            // the prefab used to create new elements
+    public UILeaderboard ScriptUILeaderboard;   // reference to the leaderboard script to update it 
     
     List<GameObject> uiLevelObjects;    // a reference to all objects created
     int idCurrentlySelected;            // the id of the gameobject that is currently selected
@@ -27,11 +28,14 @@ public class UILevelLister : MonoBehaviour
      */
     public void FlagLevelAsSelected(GameObject level)
     {
+        // unselect the previous level
         if(idCurrentlySelected >= 0)
         {
             uiLevelObjects[idCurrentlySelected].GetComponent<UILevel>().Unselect();
         }
+        // select the new one
         idCurrentlySelected = uiLevelObjects.IndexOf(level);
+        ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
     }
 
     /**

@@ -73,7 +73,6 @@ public class GameStarter : MonoBehaviour
         {
             SceneManager.LoadScene("GameScene");
         }
-        
     }
 
     /**
