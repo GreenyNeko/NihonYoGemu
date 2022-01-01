@@ -16,16 +16,13 @@ public class UILeaderboard : MonoBehaviour
 
     public void UpdateLeaderboard(string levelName)
     {
-        // clean up leaderboard if we select a different level
-        if(currentLevel != levelName)
+        // clean up leaderboard
+        for(int i = 0; i < ContentElement.transform.childCount; i++)
         {
-            for(int i = 0; i < ContentElement.transform.childCount; i++)
-            {
-                Destroy(ContentElement.transform.GetChild(i).gameObject);
-            }
+            Destroy(ContentElement.transform.GetChild(i).gameObject);
         }
         currentLevel = levelName;
-        // load leaderboard from file
+        // load leaderboard from file and create the elements
         Leaderboard leaderboard = Leaderboard.LoadLeaderboardByName(levelName);
         for(int i = 0; i < leaderboard.Count(); i++)
         {

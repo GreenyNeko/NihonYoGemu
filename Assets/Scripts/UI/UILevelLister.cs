@@ -36,6 +36,7 @@ public class UILevelLister : MonoBehaviour
     {
         // enable play button now that a level is active
         PlayButton.GetComponent<Button>().interactable = true;
+        int prevSelected = idCurrentlySelected;
         // unselect the previous level
         if (idCurrentlySelected >= 0 && uiLevelObjects[idCurrentlySelected].gameObject != level.gameObject)
         {
@@ -43,7 +44,15 @@ public class UILevelLister : MonoBehaviour
         }
         // select the new one
         idCurrentlySelected = uiLevelObjects.IndexOf(level);
-        ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+        // only update if a new level has been selected
+        if(prevSelected >= 0 && uiLevelObjects[prevSelected].gameObject != level.gameObject)
+        {
+            ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+        }
+        else if(prevSelected < 0)
+        {
+            ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+        }
     }
 
     /**
