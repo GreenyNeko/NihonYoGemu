@@ -101,8 +101,8 @@ public class SettingsManager : MonoBehaviour
     {
         // get all resolutions supported by the screen
         List<Resolution> supportedResolutions = new List<Resolution>(Screen.resolutions);
-        // filter out all resolutions that don't support the sentence length of 96
-        supportedResolutions.RemoveAll((res) => { return res.height < 800 || res.width < 1280; });
+        // filter out all resolutions that don't support the sentence length of 105
+        supportedResolutions.RemoveAll((res) => { return res.height < 960 || res.width < 600; });
         // create the options for the dropdown
         var optionDatas = new List<TMP_Dropdown.OptionData>();
         foreach(Resolution res in supportedResolutions)

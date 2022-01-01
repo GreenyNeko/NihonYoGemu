@@ -144,7 +144,7 @@ public class Level
     public int ParseLevel()
     {
         // the sentences are too long to be displayed on all supported screens
-        if(longestSentence > 96)
+        if(longestSentence > 105)
         {
             return 1;
         }
