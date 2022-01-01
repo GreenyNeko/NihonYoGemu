@@ -51,6 +51,9 @@ public class SettingsManager : MonoBehaviour
         PlayerPrefs.SetInt("settings_resolution_windowmode", mode);
     }
 
+    /**
+     * Updates the resolution given the resolution option that has been selected
+     */
     public void OnUpdateResolution(int resolution)
     {
         string resStr = DropdownResolution.options[resolution].text;
@@ -105,14 +108,18 @@ public class SettingsManager : MonoBehaviour
         // get all resolutions supported by the screen
         List<Resolution> supportedResolutions = new List<Resolution>(Screen.resolutions);
         // filter out all resolutions that don't support the sentence length of 96
-        supportedResolutions.RemoveAll((res) => { return res.height < 800 && res.width < 1280; });
+        supportedResolutions.RemoveAll((res) => { return res.height < 800 || res.width < 1280; });
         // create the options for the dropdown
         var optionDatas = new List<TMP_Dropdown.OptionData>();
         foreach(Resolution res in supportedResolutions)
         {
             var optionData = new TMP_Dropdown.OptionData();
             optionData.text = res.width.ToString() + "x" + res.height.ToString();
-            optionDatas.Add(optionData);
+            // do not add duplicates
+            if(!optionDatas.Exists((od) => { return od.text == optionData.text; }))
+            {
+                optionDatas.Add(optionData);
+            }
         }
         DropdownResolution.AddOptions(optionDatas);
     }
