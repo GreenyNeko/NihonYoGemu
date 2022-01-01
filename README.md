@@ -5,7 +5,7 @@ Osu inspired Japanese reading game
 NihonYoGemu is a in unity developed game which allows you to practice reading Kanjis using user created content. It is released as donationware, which means you can download, test and distribute it for free, however, users are encouraged to donate to the creator if they feel this software is useful.
 
 ### Minimum Requirements
-* Resolution greater or equal to 1280x800
+* Resolution greater or equal to 960x600
 * 102MB disk space
 * 200MB RAM
 
@@ -54,7 +54,7 @@ Again you can check the Tutorial.nyl to see how this was achieved.
 #### NihonYoGemu Parser
 NihonYoGemu features a parser that will parse levels for errors. Parser errors can be seen as a warning on the level in the level select. Hovering over the warning symbol shows the error.
 Current possible errors include:
-* Sentence has more than 96 characters
+* Sentence has more than 105 characters
 * There's less furigana solutions than kanjis
 
 ### NYL.META - NihonYoLevel Meta Files
