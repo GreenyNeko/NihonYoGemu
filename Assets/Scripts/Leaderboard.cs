@@ -114,8 +114,8 @@ public class Leaderboard
      */
     public void Add(HighScore highScore)
     {
-        // check if this score is worth adding
-        if (highScores.Count != 0 && highScores[highScores.Count - 1].score > highScore.score)
+        // if there are 10 scores only add if it's worth adding
+        if (highScores.Count >= 10 && highScores[highScores.Count - 1].score > highScore.score)
         {
             return;
         }

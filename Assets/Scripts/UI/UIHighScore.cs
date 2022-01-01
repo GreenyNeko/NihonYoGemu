@@ -26,12 +26,14 @@ public class UIHighScore : MonoBehaviour
     Dictionary<int, GameObject> modImagesDict;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         // converts the list of structures to a dictionary
         modImagesDict = new Dictionary<int, GameObject>();
         foreach (ModImage structure in ModImages)
         {
+            // disable all mod images by default
+            structure.Image.SetActive(false);
             modImagesDict.Add(structure.mod, structure.Image);
         }
     }
@@ -45,8 +47,15 @@ public class UIHighScore : MonoBehaviour
     public void SetValues(string userName, int score, float accuracy, GameMods mods)
     {
         TextUserName.SetText(userName);
-        TextScore.SetText(score.ToString());
+        string strScore = score.ToString();
+        // adds 0's at the beginning
+        while (strScore.Length < 8)
+        {
+            strScore = "0" + strScore;
+        }
+        TextScore.SetText(strScore);
         TextAccuracy.SetText(accuracy.ToString() + "%");
+        // if it's not initialized run start manually
         if(mods.HasFlag(GameMods.Furigana) && modImagesDict.ContainsKey((int)GameMods.Furigana))
         {
             modImagesDict[(int)GameMods.Furigana].SetActive(true);
