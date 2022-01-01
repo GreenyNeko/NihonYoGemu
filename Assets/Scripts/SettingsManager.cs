@@ -33,19 +33,16 @@ public class SettingsManager : MonoBehaviour
                 // windowed
                 Screen.fullScreenMode = FullScreenMode.Windowed;
                 Screen.fullScreen = false;
-                DropdownResolution.interactable = true;
                 break;
             case 1:
                 // fullscreen windowed
                 Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
                 Screen.fullScreen = true;
-                DropdownResolution.interactable = false;
                 break;
             default:
                 // fullscreen
                 Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
                 Screen.fullScreen = true;
-                DropdownResolution.interactable = false;
                 break;
         }
         PlayerPrefs.SetInt("settings_resolution_windowmode", mode);
@@ -75,21 +72,18 @@ public class SettingsManager : MonoBehaviour
                     // windowed
                     Screen.fullScreenMode = FullScreenMode.Windowed;
                     Screen.fullScreen = false;
-                    DropdownResolution.interactable = true;
                     DropdownWindowMode.SetValueWithoutNotify(2);
                     break;
                 case 1:
                     // fullscreen windowed
                     Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
                     Screen.fullScreen = true;
-                    DropdownResolution.interactable = false;
                     DropdownWindowMode.SetValueWithoutNotify(1);
                     break;
                 default:
                     // fullscreen
                     Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
                     Screen.fullScreen = true;
-                    DropdownResolution.interactable = false;
                     DropdownWindowMode.SetValueWithoutNotify(0);
                     break;
             }
