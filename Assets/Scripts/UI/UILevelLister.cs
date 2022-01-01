@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /**
  * Script that handles the list of all UI levels
@@ -9,7 +10,8 @@ public class UILevelLister : MonoBehaviour
 {
     public Transform UILevelParent;             // where to instantiate them to
     public GameObject UILevelPrefab;            // the prefab used to create new elements
-    public UILeaderboard ScriptUILeaderboard;   // reference to the leaderboard script to update it 
+    public UILeaderboard ScriptUILeaderboard;   // reference to the leaderboard script to update it
+    public GameObject PlayButton;               // reference to the play button to enable/disable it
     
     List<GameObject> uiLevelObjects;    // a reference to all objects created
     int idCurrentlySelected;            // the id of the gameobject that is currently selected
@@ -23,6 +25,7 @@ public class UILevelLister : MonoBehaviour
         // init list
         uiLevelObjects = new List<GameObject>();
         idCurrentlySelected = -1;
+        PlayButton.GetComponent<Button>().interactable = false;
         createUILevelObjects();
     }
 
@@ -31,8 +34,10 @@ public class UILevelLister : MonoBehaviour
      */
     public void FlagLevelAsSelected(GameObject level)
     {
+        // enable play button now that a level is active
+        PlayButton.GetComponent<Button>().interactable = true;
         // unselect the previous level
-        if(idCurrentlySelected >= 0)
+        if (idCurrentlySelected >= 0 && uiLevelObjects[idCurrentlySelected].gameObject != level.gameObject)
         {
             uiLevelObjects[idCurrentlySelected].GetComponent<UILevel>().Unselect();
         }
