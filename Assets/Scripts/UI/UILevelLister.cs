@@ -8,6 +8,8 @@ using UnityEngine.UI;
  */
 public class UILevelLister : MonoBehaviour
 {
+    public GameObject NormalMenu;               // the menu that is usually used
+    public GameObject LoadingScreen;            // the menu or screen when reloading
     public Transform UILevelParent;             // where to instantiate them to
     public GameObject UILevelPrefab;            // the prefab used to create new elements
     public UILeaderboard ScriptUILeaderboard;   // reference to the leaderboard script to update it
@@ -18,6 +20,8 @@ public class UILevelLister : MonoBehaviour
     string filter = "";                 // stores the filter to apply it when creating UI objects
     bool sortAscending = true;          // stores whether or not the sort is ascending or descending
     int sortMode = 0;                   // stores the sort mode so we need no reference
+    IEnumerator loadingEnumerator;      // the current coroutine to work on
+    bool reloadingLevels = false;       // used to disable input
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +30,46 @@ public class UILevelLister : MonoBehaviour
         uiLevelObjects = new List<GameObject>();
         idCurrentlySelected = -1;
         PlayButton.GetComponent<Button>().interactable = false;
+        LoadingScreen.SetActive(false);
         createUILevelObjects();
+    }
+
+    void Update()
+    {
+        // we don't wanna reload if we're already reloading...
+        if(!reloadingLevels)
+        {
+            // handle shortcuts
+            if (Input.GetKeyDown(KeyCode.F5))
+            {
+                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                {
+                    // Shift-F5, Ctrl-F5
+                    StartCoroutine(ReloadLevels(false));
+                }
+                else
+                {
+                    // F5
+                    StartCoroutine(ReloadLevels(true));
+                }
+            }
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            {
+                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                {
+                    if(Input.GetKeyDown(KeyCode.R))
+                    {
+                        // Ctrl-Shift-R
+                        StartCoroutine(ReloadLevels(false));
+                    }
+                }
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    // Ctrl-R
+                    StartCoroutine(ReloadLevels(true));
+                }
+            }
+        }
     }
 
     /**
@@ -354,5 +397,53 @@ public class UILevelLister : MonoBehaviour
         }
         // update the scrolling size of the parent to fix a unity issue with updating content in a scroll view
         UILevelParent.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, (LevelLoader.GetLevelMetaCount() - skippedObjects) * 100);
+    }
+
+    // used to soft or hard reload levels changes the menu while loading to disable input
+    IEnumerator ReloadLevels(bool soft)
+    {
+        // unselect selected level
+        if(idCurrentlySelected >= 0)
+        {
+            uiLevelObjects[idCurrentlySelected].GetComponent<UILevel>().Unselect();
+            idCurrentlySelected = -1;
+        }
+        // clean up old list
+        for (int i = 0; i < uiLevelObjects.Count; i++)
+        {
+            Destroy(uiLevelObjects[i]);
+        }
+        // remove all elements
+        uiLevelObjects.Clear();
+        // update menu and lock other things
+        reloadingLevels = true;
+        NormalMenu.SetActive(false);
+        LoadingScreen.SetActive(true);
+        // for passing on the result to us and evaluating it for feedback
+        object result;
+        // select the enumerator given how we want to reload levels
+        if (!soft)
+        {
+            loadingEnumerator = LevelLoader.HardReloadLevels();
+        }
+        else
+        {
+            loadingEnumerator = LevelLoader.SoftReloadLevels();
+        }
+        // actually reload the levels
+        while (loadingEnumerator.MoveNext())
+        {
+            // get the result
+            result = loadingEnumerator.Current;
+            // TODO: evaluate result do something with it
+            yield return 0; // give control back to the program
+        }
+        // we're done change back to previous
+        // update menu and lock other things
+        reloadingLevels = false;
+        NormalMenu.SetActive(true);
+        LoadingScreen.SetActive(false);
+        // recreate ui
+        createUILevelObjects();
     }
 }
