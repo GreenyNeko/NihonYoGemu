@@ -55,8 +55,10 @@ public class ProgressBar : MonoBehaviour
         if(ImageFill.sprite == null)
         {
             // change the anchor to scale it down
-            ImageFill.transform.GetComponent<RectTransform>().anchorMax = new Vector2(((float)Value / MaxValue), 1);
-            ImageFill.transform.localPosition = new Vector3(0, 0, 0);
+            if(MaxValue > 0)
+            {
+                ImageFill.transform.GetComponent<RectTransform>().anchorMax = new Vector2(((float)Value / MaxValue), 1);
+            }
         }
         else
         {

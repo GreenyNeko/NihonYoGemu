@@ -2,12 +2,16 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
+using UnityEngine.Video;
 
 /**
  * This script loads all the game data needed globally in the game
  */
 public class LoadingManager : MonoBehaviour
 {
+    public GameObject licenseScreen;// the screen containing the license
+    public GameObject loadingScreen;// the screen with the loading information
+    public VideoPlayer videoPlayer; // the video player of the splash
     public TextAsset KanjiDic;      // The file containing all kanji definitions
     public ProgressBar ProgressBar; // The progressbar to update given the loading progress
     public GameObject TextInfo;     // The game object that shows additional information
@@ -17,6 +21,10 @@ public class LoadingManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        videoPlayer.gameObject.SetActive(true);
+        licenseScreen.SetActive(false);
+        loadingScreen.SetActive(false);
+        StartCoroutine("opening");
         CreateNecessaryFolders();
         StartCoroutine("loadData");
     }
@@ -35,6 +43,26 @@ public class LoadingManager : MonoBehaviour
         {
             Directory.CreateDirectory("InputMethods");
         }
+    }
+
+    // controlls playing the opening
+    IEnumerator opening()
+    {
+        // waiting for splash to play
+        while(!videoPlayer.isPlaying)
+        {
+            yield return null;
+        }
+        // waiting for splash to end
+        while(videoPlayer.isPlaying)
+        {
+            yield return null;
+        }
+        videoPlayer.gameObject.SetActive(false);
+        licenseScreen.SetActive(true);
+        yield return new WaitForSeconds(15);
+        licenseScreen.SetActive(false);
+        loadingScreen.SetActive(true);
     }
 
     // Coroutine to load all data required by the program
