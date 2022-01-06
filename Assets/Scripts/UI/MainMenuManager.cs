@@ -9,13 +9,15 @@ public class MainMenuManager : MonoBehaviour
     public GameObject MainMenu;
     public GameObject SettingsMenu;
     public GameObject ExitMenu;
-    
+    public GameObject DonationMenu;
+
     // Start is called before the first frame update
     void Start()
     {
         MainMenu.SetActive(true);
         SettingsMenu.SetActive(false);
         ExitMenu.SetActive(false);
+        DonationMenu.SetActive(false);
     }
 
     // Update is called once per frame
@@ -24,7 +26,7 @@ public class MainMenuManager : MonoBehaviour
         // open exit menu when escape is pressed (shortcut)
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            ExitMenu.SetActive(true);        
+            ExitMenu.SetActive(true);
         }
     }
 
@@ -42,5 +44,21 @@ public class MainMenuManager : MonoBehaviour
     public void ExitGame()
     {
         Application.Quit();
+    }
+
+    /**
+     * Toggles the donation menu
+     */
+    public void ToggleDonationMenu()
+    {
+        DonationMenu.SetActive(!DonationMenu.activeInHierarchy);
+    }
+
+    /**
+     * Opens a URL (used for the donation options)
+     */
+    public void OpenURL(string URL)
+    {
+        Application.OpenURL(URL);
     }
 }
