@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /**
  * This scripts manages the progress through the level.
@@ -11,6 +12,7 @@ public class LevelManager : MonoBehaviour
     public TMPro.TMP_Text SentencesOutput;  // Text element the sentence will be put into
     public GameObject Furiganas;            // Parent of all furigana text elements
     public GameManager ScriptGameManager;   // Reference to the game manager script
+    public Image ProgressImage;             // Reference to the image showing level progress
 
     public GameObject FuriganaPrefab;       // prefab to create new furigana elements
 
@@ -100,6 +102,7 @@ public class LevelManager : MonoBehaviour
                 progress = 0;
             }
             updateTextMesh();
+            updateProgressImage();
         }
     }
 
@@ -199,5 +202,11 @@ public class LevelManager : MonoBehaviour
                 SentencesOutput.UpdateVertexData(TMPro.TMP_VertexDataUpdateFlags.Colors32);
             }
         }
+    }
+
+    // updates the image showing the level progress
+    void updateProgressImage()
+    {
+        ProgressImage.fillAmount = (float)(kanjiCount + currLine) / (gameStarter.GetLevel().GetKanjiCount() + gameStarter.GetLevel().GetSentenceCount());
     }
 }
