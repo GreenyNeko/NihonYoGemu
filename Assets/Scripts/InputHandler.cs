@@ -156,7 +156,7 @@ public class InputHandler : MonoBehaviour
                 currentInput += character;
             }
             // update the displayed text given the input and the input method converting it to hiragana
-            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput));
+            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput, true));
         }
     }
 
@@ -171,7 +171,7 @@ public class InputHandler : MonoBehaviour
         if (currentInput.Length > 0)
         {
             currentInput = currentInput.Substring(0, currentInput.Length - 1);
-            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput));
+            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput, true));
         }
     }
 
@@ -191,7 +191,7 @@ public class InputHandler : MonoBehaviour
             // reset input
             currentInput = "";
             // update display
-            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput));
+            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput, false));
         }
         else
         {

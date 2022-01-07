@@ -84,7 +84,7 @@ public class LevelManager : MonoBehaviour
             if (gameStarter.GetLevel().GetKanjiFromSentence(currLine).Length > 0)
             {
                 // clean up input (input should be what we see
-                string playerFurigana = JapaneseDictionary.ConvertRomajiToKana(input);
+                string playerFurigana = JapaneseDictionary.ConvertRomajiToKana(input, false);
                 // compare current input vs kanji reading
                 if (playerFurigana == gameStarter.GetLevel().GetFuriganaFromKanji(kanjiCount))
                 {
