@@ -147,7 +147,10 @@ public class InputHandler : MonoBehaviour
             if (lastChar != character)
             {
                 internCooldown = 0.5f;
-                currentInput += character;
+                if(currentInput.Length < 13)
+                {
+                    currentInput += character;
+                }
             }
             else
             {
