@@ -128,7 +128,7 @@ public static class JapaneseDictionary
                         return true;
                     }
                     // does the string converted to hiragana match the hiragana of the kanji?
-                    if (ConvertRomajiToKana(str) == kanjis[i].GetReadings()[j])
+                    if (ConvertRomajiToKana(str, false) == kanjis[i].GetReadings()[j])
                     {
                         return true;
                     }
@@ -179,7 +179,7 @@ public static class JapaneseDictionary
     /**
      * Converts romaji to kana
      */
-    public static string ConvertRomajiToKana(string givenRomaji)
+    public static string ConvertRomajiToKana(string givenRomaji, bool keepRest)
     {
         //string rest = "";
         string result = "";
@@ -195,19 +195,26 @@ public static class JapaneseDictionary
                 result += "っ";
                 continue;
             }
+            bool partOfKana = false;
             // check different sizes
             for(int j = 0; j < kana.Count; j++)
             {
                 // check if the romaji matches our kana
-
                 if(i + kana[j].GetReading().Length <= givenRomaji.Length && givenRomaji.Substring(i, kana[j].GetReading().Length) == kana[j].GetReading())
                 {
                     // store the character replacement and move to the next character after ours
                     result += kana[j].GetCharacter();
+                    partOfKana = true;
                     i += kana[j].GetReading().Length - 1;
+                    break;
                 }
             }
+            if (!partOfKana && keepRest && i < givenRomaji.Length)
+            {
+                result += givenRomaji[i];
+            }
         }
+
         return result;
     }
 
