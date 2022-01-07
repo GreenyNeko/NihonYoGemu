@@ -50,6 +50,25 @@ public class LevelManager : MonoBehaviour
             ScriptGameManager.OnEnd();
         }
         updateTextMesh();
+        updateProgressImage();
+    }
+
+    /**
+     * Resets the level and game manager
+     */
+    public void ResetLevel()
+    {
+        currLine = 0;
+        kanjiCount = 0;
+        progress = 0;
+        ScriptGameManager.ResetGame();
+        // level is completed by default
+        if (gameStarter.GetLevel().GetSentenceCount() <= 0)
+        {
+            ScriptGameManager.OnEnd();
+        }
+        updateTextMesh();
+        updateProgressImage();
     }
 
 

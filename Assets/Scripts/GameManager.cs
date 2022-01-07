@@ -86,6 +86,22 @@ public class GameManager : MonoBehaviour
     }
 
     /**
+     * Resets the game progress (score, accuracy, etc.)
+     */
+    public void ResetGame()
+    {
+        score = 0;
+        correctKanji = 0;
+        sloppyKanji = 0;
+        missedKanji = 0;
+        combo = 0;
+        accuracy = 0;
+        hitRate = 0;
+        maxCombo = 0;
+        updateUI();
+    }
+
+    /**
      * Tells the game manager a kanji has been read correct
      */
     public void OnCorrect()

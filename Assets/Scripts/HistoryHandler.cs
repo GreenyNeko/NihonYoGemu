@@ -12,9 +12,17 @@ public class HistoryHandler : MonoBehaviour
 
     private void Start()
     {
+        ResetHistoryHandler();
+    }
+
+    /**
+     * resets the ui elements and counter of the history handler to their initial state
+     */
+    public void ResetHistoryHandler()
+    {
         // initalize counter and color for each element
         internalCounter = 0;
-        foreach(GameObject elem in HitVisualizer)
+        foreach (GameObject elem in HitVisualizer)
         {
             elem.GetComponent<RawImage>().color = ColorDef;
         }
