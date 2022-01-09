@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using System.Linq;
 using System.Xml;
+using System.IO;
 
 /**
  * Contains helpful functions and ddefinitions needed
@@ -31,6 +33,7 @@ public static class JapaneseDictionary
         XmlDocument xmlDocument = new XmlDocument();
         xmlDocument.LoadXml(textAsset.text);
         XmlNodeList xmlNodeList = xmlDocument.GetElementsByTagName("character");
+        float runTime = 0;
         foreach(XmlNode xmlNode in xmlNodeList)
         {
             string character = xmlNode.SelectSingleNode("literal").InnerText;
@@ -75,7 +78,45 @@ public static class JapaneseDictionary
                 readings.Add(rawReading);
             }
             kanjis.Add(new Kanji(character, ranking, jlpt).SetReadings(readings.Distinct<string>().ToArray()));
-            yield return (character, kanjis.Count);
+            runTime += Time.deltaTime;
+            // run for at least 0.5 seconds before
+            if (runTime > 0.5f)
+            {
+                runTime %= 0.5f;
+                yield return (character, kanjis.Count);
+            }
+        }
+    }
+
+    /**
+     * Reads the kanjidef.bin and creates the kanji entries from it and returns
+     * the progress
+     */
+    public static IEnumerator CreateKanjiFromBinary(TextAsset textAsset)
+    {
+        float runTime = 0;
+        using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(textAsset.bytes)))
+        {
+            while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
+            {
+                string character = binaryReader.ReadString();
+                int jlpt = binaryReader.ReadInt32();
+                int ranking = binaryReader.ReadInt32();
+                int readingsCount = binaryReader.ReadInt32();
+                string[] readings = new string[readingsCount];  
+                for(int i = 0; i < readingsCount; i++)
+                {
+                    readings[i] = binaryReader.ReadString();
+                }
+                kanjis.Add(new Kanji(character, ranking, jlpt).SetReadings(readings));
+                runTime += Time.deltaTime;
+                // run for at least 0.5 seconds before
+                if (runTime > 0.5f)
+                {
+                    runTime %= 0.5f;
+                    yield return (character, kanjis.Count);
+                }
+            }
         }
     }
 

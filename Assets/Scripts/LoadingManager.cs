@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
 using UnityEngine.Video;
+using UnityEditor;
 
 /**
  * This script loads all the game data needed globally in the game
@@ -12,7 +13,8 @@ public class LoadingManager : MonoBehaviour
     public GameObject licenseScreen;// the screen containing the license
     public GameObject loadingScreen;// the screen with the loading information
     public VideoPlayer videoPlayer; // the video player of the splash
-    public TextAsset KanjiDic;      // The file containing all kanji definitions
+    public TextAsset KanjiDic;      // The xml file containing all kanji definitions
+    public TextAsset KanjiDef;   // The binary file containing all kanji definitions
     public ProgressBar ProgressBar; // The progressbar to update given the loading progress
     public GameObject TextInfo;     // The game object that shows additional information
 
@@ -27,6 +29,18 @@ public class LoadingManager : MonoBehaviour
         StartCoroutine("opening");
         CreateNecessaryFolders();
         StartCoroutine("loadData");
+    }
+
+    void Update()
+    {
+        if(licenseScreen.activeInHierarchy)
+        {
+            if(Input.anyKeyDown)
+            {
+                licenseScreen.SetActive(false);
+                loadingScreen.SetActive(true);
+            }
+        }
     }
 
     private void CreateNecessaryFolders()
@@ -60,16 +74,14 @@ public class LoadingManager : MonoBehaviour
         }
         videoPlayer.gameObject.SetActive(false);
         licenseScreen.SetActive(true);
-        yield return new WaitForSeconds(15);
-        licenseScreen.SetActive(false);
-        loadingScreen.SetActive(true);
     }
 
     // Coroutine to load all data required by the program
     IEnumerator loadData()
     {
         // start with loading the kanjis from the xml
-        loadingEnumerator = JapaneseDictionary.CreateKanjiFromXML(KanjiDic);
+        //loadingEnumerator = JapaneseDictionary.CreateKanjiFromXML(KanjiDic);
+        loadingEnumerator = JapaneseDictionary.CreateKanjiFromBinary(KanjiDef);
         object result;
         ProgressBar.MaxValue = 13108; // hard coded through loading all kanjis in kanjidic, won't change unless the textasset file is updated
         while(loadingEnumerator.MoveNext())
@@ -121,6 +133,11 @@ public class LoadingManager : MonoBehaviour
                 ProgressBar.Value = actualResult.Item3;
             }
             yield return 0; // give control back to the program
+        }
+        // wait for license screen to be done
+        while(licenseScreen.activeInHierarchy)
+        {
+            yield return 0;
         }
         SceneManager.LoadScene("MainMenu");
     }
