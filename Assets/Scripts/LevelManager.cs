@@ -167,14 +167,13 @@ public class LevelManager : MonoBehaviour
                     int vertexIndex = charInfo.vertexIndex;
                     Vector3[] vertexPositions = SentencesOutput.mesh.vertices;
                     // place the furigana above the kanji
-                    furigana.transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2, vertexPositions[vertexIndex + 1].y + 2, furigana.transform.position.z);
                     furigana.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, vertexPositions[vertexIndex + 2].x - vertexPositions[vertexIndex + 1].x);
-
+                    furigana.transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2, vertexPositions[vertexIndex + 1].y - 32, furigana.transform.position.z);
                     // biggest = 26
                     // smallest = 8
                     // determine furigana size given amount of characters
                     // currently hardcoded for the best effect
-                    switch(mostKana)
+                    switch (mostKana)
                     {
                         case 4:
                             furigana.fontSize = 12;
