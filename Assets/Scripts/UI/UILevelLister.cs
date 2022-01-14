@@ -63,7 +63,7 @@ public class UILevelLister : MonoBehaviour
                         StartCoroutine(ReloadLevels(false));
                     }
                 }
-                if (Input.GetKeyDown(KeyCode.R))
+                else if (Input.GetKeyDown(KeyCode.R))
                 {
                     // Ctrl-R
                     StartCoroutine(ReloadLevels(true));
