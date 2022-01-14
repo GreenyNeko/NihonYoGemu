@@ -54,7 +54,7 @@ public class LevelLoader : MonoBehaviour
         }
         level.DeriveStats();
         // invalid level
-        if(level.GetLongestSentenceLength() > 105)
+        if(level.ParseLevel() != 0)
         {
             return null;
         }
