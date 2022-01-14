@@ -387,6 +387,7 @@ public class UILevelLister : MonoBehaviour
             uiLevel.SetAuthorName(meta.GetAuthor());
             uiLevel.SetLevelName(meta.GetLevelName());
             uiLevel.SetDifficulty(meta.GetDifficulty());
+            uiLevel.SetLength((int)meta.GetLevelLength());
             uiLevel.LevelFinder = this;
             // flag if level sentence too long
             uiLevel.SetParserResult(meta.GetParserResult());

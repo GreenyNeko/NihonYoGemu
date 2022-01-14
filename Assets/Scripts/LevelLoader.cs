@@ -156,9 +156,10 @@ public class LevelLoader : MonoBehaviour
                     uint levelLength = binaryReader.ReadUInt32();
                     uint kanjiCount = binaryReader.ReadUInt32();
                     uint sentenceLength = binaryReader.ReadUInt32();
+                    uint sentences = binaryReader.ReadUInt32();
                     sbyte parserResult = binaryReader.ReadSByte();
                     string author = binaryReader.ReadString();
-                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, parserResult);
+                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, sentences, parserResult);
                     levelMetas.Add(levelMeta);
                 }
             }
@@ -339,9 +340,10 @@ public class LevelLoader : MonoBehaviour
                     uint levelLength = binaryReader.ReadUInt32();
                     uint kanjiCount = binaryReader.ReadUInt32();
                     uint sentenceLength = binaryReader.ReadUInt32();
+                    uint sentences = binaryReader.ReadUInt32();
                     sbyte parserResult = binaryReader.ReadSByte();
                     string author = binaryReader.ReadString();
-                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, parserResult);
+                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, sentences, parserResult);
                     levelMetas.Add(levelMeta);
                 }
             }

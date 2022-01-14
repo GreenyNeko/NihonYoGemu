@@ -15,6 +15,7 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
     public GameObject Panel;            // the panel UI element holding everything
     public TMP_Text TextLevelName;      // the text element that shows the name
     public TMP_Text TextAuthorName;     // the text element that shows the author name
+    public TMP_Text TextLength;         // the text element that shows the length of the level
     public Image DifficultySliderFill;  // the image element that controls the difficulty slider
     public Image Warning;               // the image element showing if a warning occured
     public GameObject Tooltip;          // the tooltip element showing the warning message
@@ -86,6 +87,14 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
     public void SetDifficulty(float difficulty)
     {
         DifficultySliderFill.fillAmount = difficulty / 10;
+    }
+
+    /**
+     * Sets the length of the level
+     */
+    public void SetLength(int length)
+    {
+        TextLength.SetText(length.ToString());
     }
 
     /**

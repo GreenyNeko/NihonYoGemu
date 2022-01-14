@@ -14,10 +14,11 @@ public class LevelMeta
     string name;                // file name
     string author;              // level author
     float difficulty;           // level difficulty
-    uint totalCharacters;        // total characters in the level
-    uint totalKanjis;            // total kanjis in the level
-    uint longestSentence;        // the longest sentence
-    sbyte parserResult;           // the result of the level parsing
+    uint totalCharacters;       // total characters in the level
+    uint totalKanjis;           // total kanjis in the level
+    uint longestSentence;       // the longest sentence
+    uint sentences;         // how many sentences the level has
+    sbyte parserResult;         // the result of the level parsing
 
     // private constructor, to create levelmetas without information first internally
     private LevelMeta()
@@ -29,12 +30,13 @@ public class LevelMeta
         totalKanjis = 0;
         longestSentence = 0;
         parserResult = 0;
+        sentences = 0;
     }
 
     /**
      * Create a new level meta given necessary parameters
      */
-    public LevelMeta(string name, float difficulty, uint totalCharacters, uint totalKanjis, string author, uint longestSentence, sbyte parserResult)
+    public LevelMeta(string name, float difficulty, uint totalCharacters, uint totalKanjis, string author, uint longestSentence, uint senteces, sbyte parserResult)
     {
         this.name = name;
         this.difficulty = difficulty;
@@ -42,6 +44,7 @@ public class LevelMeta
         this.totalKanjis = totalKanjis;
         this.author = author;
         this.longestSentence = longestSentence;
+        this.sentences = sentences;
         this.parserResult = parserResult;
     }
 
@@ -94,11 +97,27 @@ public class LevelMeta
     }
 
     /**
+     * Return number of sentences
+     */
+    public uint GetSentenceCount()
+    {
+        return sentences;
+    }
+
+    /**
      * Returns how many kanjis occur per character
      */
     public float GetKanjiRate()
     {
         return (float)totalKanjis / totalCharacters;
+    }
+
+    /**
+     * How many elements the level requires you to progress
+     */
+    public uint GetLevelLength()
+    {
+        return sentences + totalKanjis;
     }
 
     /**
@@ -123,6 +142,7 @@ public class LevelMeta
         levelMeta.totalKanjis = (uint)level.GetKanjiCount();
         levelMeta.author = level.Author;
         levelMeta.longestSentence = (uint)level.GetLongestSentenceLength();
+        levelMeta.sentences = (uint)level.GetSentenceCount();
         levelMeta.parserResult = (sbyte)level.ParseLevel();
         // create the file in the system
         using(BinaryWriter binaryWriter = new BinaryWriter(File.Open("Levels/" + levelMeta.name + ".nyl.meta", FileMode.Create)))
@@ -133,6 +153,7 @@ public class LevelMeta
             binaryWriter.Write(levelMeta.totalCharacters);
             binaryWriter.Write(levelMeta.totalKanjis);
             binaryWriter.Write(levelMeta.longestSentence);
+            binaryWriter.Write(levelMeta.sentences);
             binaryWriter.Write(levelMeta.parserResult);
             binaryWriter.Write(levelMeta.author);
         }
