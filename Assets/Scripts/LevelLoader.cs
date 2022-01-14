@@ -131,35 +131,52 @@ public class LevelLoader : MonoBehaviour
                     continue;
                 }
             }
-            using (StreamReader streamReader = new StreamReader("Levels/" + fileInfo.Name))
+            bool success = true;
+            try
             {
-                // load data from file
-                string metaData = streamReader.ReadToEnd();
-                // check meta tag
-                if (!metaData.StartsWith("NYLM"))
+                using (BinaryReader binaryReader = new BinaryReader(File.Open("Levels/" + fileInfo.Name, FileMode.Open)))
                 {
-                    // file corrupt or not a valid nihonyolevel meta
-                    // skip this file
-                    continue;
+                    // load data from file
+                    string startStr = binaryReader.ReadString();
+                    // check meta tag
+                    if (!startStr.StartsWith("NYLM"))
+                    {
+                        // file corrupt or not a valid nihonyolevel meta
+                        // skip this file
+                        continue;
+                    }
+                    ushort version = binaryReader.ReadUInt16();
+                    if (version != LevelMeta.Version)
+                    {
+                        // skip this file if the version mismatches with the current
+                        // this forces a creationg of a new meta file
+                        continue;
+                    }
+                    float difficulty = binaryReader.ReadSingle();
+                    uint levelLength = binaryReader.ReadUInt32();
+                    uint kanjiCount = binaryReader.ReadUInt32();
+                    uint sentenceLength = binaryReader.ReadUInt32();
+                    sbyte parserResult = binaryReader.ReadSByte();
+                    string author = binaryReader.ReadString();
+                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, parserResult);
+                    levelMetas.Add(levelMeta);
                 }
-
-                if (metaData.Substring(metaData.IndexOf('v') + 1, 1) != LevelMeta.Version)
-                {
-                    // skip this file if the version mismatches with the current
-                    // this forces a creationg of a new meta file
-                    continue;
-                }
-                float difficulty = float.Parse(metaData.Substring(metaData.IndexOf('d') + 1, metaData.IndexOf('l') - metaData.IndexOf('d') - 1));
-                string author = metaData.Substring(metaData.IndexOf("a_") + 2);
-                int levelLength = int.Parse(metaData.Substring(metaData.IndexOf('l') + 1, metaData.IndexOf('k') - metaData.IndexOf('l') - 1));
-                int kanjiCount = int.Parse(metaData.Substring(metaData.IndexOf('k') + 1, metaData.IndexOf('s') - metaData.IndexOf('k') - 1));
-                int sentenceLength = int.Parse(metaData.Substring(metaData.IndexOf('s') + 1, metaData.IndexOf('p') - metaData.IndexOf('s') - 1));
-                int parserResult = int.Parse(metaData.Substring(metaData.IndexOf('p') + 1, metaData.IndexOf('a') - metaData.IndexOf('p') - 1));
-                levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, parserResult);
-                levelMetas.Add(levelMeta);
             }
-            // return progress
-            yield return (0, fileInfo.Name, ++count, files);
+            catch (EndOfStreamException e)
+            {
+                Debug.LogWarning("Unabel to read meta file. skipping");
+                success = false;
+            }
+            if (success)
+            {
+                // return progress
+                yield return (0, fileInfo.Name, ++count, files);
+            }
+            else
+            {
+                // return progress
+                yield return (0, fileInfo.Name + " FAILED!", ++count, files);
+            }
         }
         files = directoryInfo.GetFiles("*.nyl").Length;
         count = 0;
@@ -296,35 +313,54 @@ public class LevelLoader : MonoBehaviour
         foreach (FileInfo fileInfo in directoryInfo.GetFiles("*.nyl.meta"))
         {
             string name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
-            using (StreamReader streamReader = new StreamReader("Levels/" + fileInfo.Name))
+            bool success = true;
+            try
             {
-                // load data from file
-                string metaData = streamReader.ReadToEnd();
-                // check meta tag
-                if(!metaData.StartsWith("NYLM"))
+                using (BinaryReader binaryReader = new BinaryReader(File.Open("Levels/" + fileInfo.Name, FileMode.Open)))
                 {
-                    // file corrupt or not a valid nihonyolevel meta
-                    // skip this file
-                    continue;
+                    LevelMeta levelMeta;
+                    // load data from file
+                    string startStr = binaryReader.ReadString();
+                    // check meta tag
+                    if (!startStr.StartsWith("NYLM"))
+                    {
+                        // file corrupt or not a valid nihonyolevel meta
+                        // skip this file
+                        continue;
+                    }
+                    ushort version = binaryReader.ReadUInt16();
+                    if (version != LevelMeta.Version)
+                    {
+                        // skip this file if the version mismatches with the current
+                        // this forces a creationg of a new meta file
+                        continue;
+                    }
+                    float difficulty = binaryReader.ReadSingle();
+                    uint levelLength = binaryReader.ReadUInt32();
+                    uint kanjiCount = binaryReader.ReadUInt32();
+                    uint sentenceLength = binaryReader.ReadUInt32();
+                    sbyte parserResult = binaryReader.ReadSByte();
+                    string author = binaryReader.ReadString();
+                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, parserResult);
+                    levelMetas.Add(levelMeta);
                 }
-                
-                if(metaData.Substring(metaData.IndexOf('v') + 1, 1) != LevelMeta.Version)
-                {
-                    // skip this file if the version mismatches with the current
-                    // this forces a creationg of a new meta file
-                    continue;
-                }
-                float difficulty = float.Parse(metaData.Substring(metaData.IndexOf('d') + 1, metaData.IndexOf('l') - metaData.IndexOf('d') - 1));
-                string author = metaData.Substring(metaData.IndexOf("a_") + 2);
-                int levelLength = int.Parse(metaData.Substring(metaData.IndexOf('l') + 1, metaData.IndexOf('k') - metaData.IndexOf('l') - 1));
-                int kanjiCount = int.Parse(metaData.Substring(metaData.IndexOf('k') + 1, metaData.IndexOf('s') - metaData.IndexOf('k') - 1));
-                int sentenceLength = int.Parse(metaData.Substring(metaData.IndexOf('s') + 1, metaData.IndexOf('p') - metaData.IndexOf('s') - 1));
-                int parserResult = int.Parse(metaData.Substring(metaData.IndexOf('p') + 1, metaData.IndexOf('a') - metaData.IndexOf('p') - 1));
-                LevelMeta levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, parserResult);
-                levelMetas.Add(levelMeta);
             }
-            // return progress
-            yield return (0, fileInfo.Name, ++count, files);
+            catch(EndOfStreamException e)
+            {
+                Debug.LogWarning("Unabel to read meta file. skipping");
+                success = false;
+            }
+            if(success)
+            {
+                // return progress
+                yield return (0, fileInfo.Name, ++count, files);
+            }
+            else
+            {
+                // return progress
+                yield return (0, fileInfo.Name + " FAILED!", ++count, files);
+            }
+
         }
         files = directoryInfo.GetFiles("*.nyl").Length;
         count = 0;

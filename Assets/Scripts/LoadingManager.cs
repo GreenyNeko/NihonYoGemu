@@ -135,7 +135,7 @@ public class LoadingManager : MonoBehaviour
             yield return 0; // give control back to the program
         }
         // wait for license screen to be done
-        while(licenseScreen.activeInHierarchy)
+        while(licenseScreen.activeInHierarchy || videoPlayer.isPlaying)
         {
             yield return 0;
         }

@@ -9,15 +9,15 @@ using System.IO;
 public class LevelMeta
 {
     // used to find file differences
-    public const string Version = "2";
+    public const ushort Version = 3;
     
     string name;                // file name
     string author;              // level author
     float difficulty;           // level difficulty
-    int totalCharacters;        // total characters in the level
-    int totalKanjis;            // total kanjis in the level
-    int longestSentence;        // the longest sentence
-    int parserResult;           // the result of the level parsing
+    uint totalCharacters;        // total characters in the level
+    uint totalKanjis;            // total kanjis in the level
+    uint longestSentence;        // the longest sentence
+    sbyte parserResult;           // the result of the level parsing
 
     // private constructor, to create levelmetas without information first internally
     private LevelMeta()
@@ -34,7 +34,7 @@ public class LevelMeta
     /**
      * Create a new level meta given necessary parameters
      */
-    public LevelMeta(string name, float difficulty, int totalCharacters, int totalKanjis, string author, int longestSentence, int parserResult)
+    public LevelMeta(string name, float difficulty, uint totalCharacters, uint totalKanjis, string author, uint longestSentence, sbyte parserResult)
     {
         this.name = name;
         this.difficulty = difficulty;
@@ -72,7 +72,7 @@ public class LevelMeta
     /**
      * Returns the amount of characters in the level
      */
-    public int GetTotalLength()
+    public uint GetTotalLength()
     {
         return totalCharacters;
     }
@@ -80,7 +80,7 @@ public class LevelMeta
     /**
      * Returns the amount of kanjis in the level
      */
-    public int GetKanjiCount()
+    public uint GetKanjiCount()
     {
         return totalKanjis;
     }
@@ -88,7 +88,7 @@ public class LevelMeta
     /**
      * Returns the length of the longest sentence
      */
-    public int GetLongestSentenceLength()
+    public uint GetLongestSentenceLength()
     {
         return longestSentence;
     }
@@ -118,18 +118,23 @@ public class LevelMeta
         LevelMeta levelMeta = new LevelMeta();
         // pass information from level
         levelMeta.name = level.Name;
-        levelMeta.totalCharacters = level.GetLevelLength();
+        levelMeta.totalCharacters = (uint)level.GetLevelLength();
         levelMeta.difficulty = level.GetLevelDifficulty();
-        levelMeta.totalKanjis = level.GetKanjiCount();
+        levelMeta.totalKanjis = (uint)level.GetKanjiCount();
         levelMeta.author = level.Author;
-        levelMeta.longestSentence = level.GetLongestSentenceLength();
-        levelMeta.parserResult = level.ParseLevel();
+        levelMeta.longestSentence = (uint)level.GetLongestSentenceLength();
+        levelMeta.parserResult = (sbyte)level.ParseLevel();
         // create the file in the system
-        using (StreamWriter streamWriter = new StreamWriter("Levels/" + levelMeta.name + ".nyl.meta"))
+        using(BinaryWriter binaryWriter = new BinaryWriter(File.Open("Levels/" + levelMeta.name + ".nyl.meta", FileMode.Create)))
         {
-            streamWriter.Write("NYLMv" + Version);
-            streamWriter.Write("d" + (Mathf.Round(levelMeta.difficulty * 100) / 100).ToString() + "l" + levelMeta.totalCharacters.ToString() + "k" + levelMeta.totalKanjis.ToString());
-            streamWriter.Write("s" + levelMeta.longestSentence.ToString() + "p" + levelMeta.parserResult.ToString() + "a_" + levelMeta.author);
+            binaryWriter.Write("NYLMv");
+            binaryWriter.Write(Version);
+            binaryWriter.Write(levelMeta.difficulty);
+            binaryWriter.Write(levelMeta.totalCharacters);
+            binaryWriter.Write(levelMeta.totalKanjis);
+            binaryWriter.Write(levelMeta.longestSentence);
+            binaryWriter.Write(levelMeta.parserResult);
+            binaryWriter.Write(levelMeta.author);
         }
         return levelMeta;
     }
