@@ -22,6 +22,7 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
     public UILevelLister LevelFinder;   // The parent that creates these objects
 
     int parserResult;                   // the result of the level parsing
+    float timeSinceLastClick;           // used for double click
 
 
     // Start is called before the first frame update
@@ -31,11 +32,13 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
         Warning.gameObject.SetActive(false);
         Tooltip.gameObject.SetActive(false);
         Panel.GetComponent<Image>().color = colorUnselected;
+        timeSinceLastClick = 0.5f;
     }
 
     // Update is called once per frame
     void Update()
     {
+        timeSinceLastClick += Time.deltaTime;
         // show error if the error occured and set the text
         if (parserResult > 0)
         { 
@@ -120,13 +123,20 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
      */
     public void OnPointerClick(PointerEventData pointerEventData)
     {
-        // if no error start level
+        // if no error select level
         if(parserResult == 0)
         {
             // select this level
             Panel.GetComponent<Image>().color = colorSelected;
             GameStarter.Instance.SetLevelByName(TextLevelName.text);
             LevelFinder.FlagLevelAsSelected(gameObject);
+            // double click
+            if (timeSinceLastClick < 0.5f)
+            {
+                GameStarter.Instance.StartLevel();
+            }
+            // reset time since last click
+            timeSinceLastClick = 0;
         }
     }
 }
