@@ -45,40 +45,47 @@ public class Leaderboard
         // if the score file exists load
         if(File.Exists("Scores/" + levelName + ".nys"))
         {
-            using (BinaryReader binaryReader = new BinaryReader(File.Open("Scores/" + levelName + ".nys", FileMode.Open)))
+            try
             {
-                // read file tag
-                string fileTag = "";
-                char[] tagChars = binaryReader.ReadChars(3);
-                fileTag += tagChars[0];
-                fileTag += tagChars[1];
-                fileTag += tagChars[2];
-                if (fileTag != "NYS")
+                using (BinaryReader binaryReader = new BinaryReader(File.Open("Scores/" + levelName + ".nys", FileMode.Open)))
                 {
-                    // not a nihonyo score file or corrupted
-                    return null;
+                    // read file tag
+                    string fileTag = "";
+                    char[] tagChars = binaryReader.ReadChars(3);
+                    fileTag += tagChars[0];
+                    fileTag += tagChars[1];
+                    fileTag += tagChars[2];
+                    if (fileTag != "NYS")
+                    {
+                        // not a nihonyo score file or corrupted
+                        return null;
+                    }
+                    string version = binaryReader.ReadString();
+                    if (version.Substring(1) != Leaderboard.Version)
+                    {
+                        // version mismatch
+                        // in this case use the old loading format and save the leaderboard using the new format
+                    }
+                    while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
+                    {
+                        HighScore highScore = new HighScore();
+                        highScore.score = binaryReader.ReadUInt32();
+                        highScore.correct = binaryReader.ReadUInt16();
+                        highScore.sloppy = binaryReader.ReadUInt16();
+                        highScore.miss = binaryReader.ReadUInt16();
+                        highScore.combo = binaryReader.ReadUInt16();
+                        highScore.accuracy = binaryReader.ReadInt16() / 100.0f;
+                        highScore.mods = (GameMods)binaryReader.ReadByte();
+                        highScore.rank = binaryReader.ReadSByte();
+                        highScore.username = binaryReader.ReadString();
+                        highScore.timestamp = binaryReader.ReadUInt64();
+                        leaderboard.Add(highScore);
+                    }
                 }
-                string version = binaryReader.ReadString();
-                if (version.Substring(1) != Leaderboard.Version)
-                {
-                    // version mismatch
-                    // in this case use the old loading format and save the leaderboard using the new format
-                }
-                while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
-                {
-                    HighScore highScore = new HighScore();
-                    highScore.score = binaryReader.ReadUInt32();
-                    highScore.correct = binaryReader.ReadUInt16();
-                    highScore.sloppy = binaryReader.ReadUInt16();
-                    highScore.miss = binaryReader.ReadUInt16();
-                    highScore.combo = binaryReader.ReadUInt16();
-                    highScore.accuracy = binaryReader.ReadInt16() / 100.0f;
-                    highScore.mods = (GameMods)binaryReader.ReadByte();
-                    highScore.rank = binaryReader.ReadSByte();
-                    highScore.username = binaryReader.ReadString();
-                    highScore.timestamp = binaryReader.ReadUInt64();
-                    leaderboard.Add(highScore);
-                }
+            }
+            catch(EndOfStreamException e)
+            {
+                Debug.LogWarning("Unable to load highscore!");
             }
         }
         return leaderboard;
