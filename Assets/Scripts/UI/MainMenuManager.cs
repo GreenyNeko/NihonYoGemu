@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -35,7 +36,29 @@ public class MainMenuManager : MonoBehaviour
      */
     public void StartGame()
     {
-        SceneManager.LoadScene("LevelSelect");
+        MemoryStream memoryStream = new MemoryStream();
+        using (BinaryWriter writer = new BinaryWriter(memoryStream))
+        {
+            writer.Write(SceneManager.GetActiveScene().buildIndex);
+            writer.Write(false);
+            writer.Flush();
+        }
+        SceneManagerPlus.LoadScene("LevelSelect", memoryStream.ToArray());
+    }
+
+    /**
+     * Tells unity to switch to the level select for the level editor
+     */
+    public void StartEditor()
+    {
+        MemoryStream memoryStream = new MemoryStream();
+        using (BinaryWriter writer = new BinaryWriter(memoryStream))
+        {
+            writer.Write(SceneManager.GetActiveScene().buildIndex);
+            writer.Write(true);
+            writer.Flush();
+        }
+        SceneManagerPlus.LoadScene("LevelSelect", memoryStream.ToArray());
     }
 
     /**

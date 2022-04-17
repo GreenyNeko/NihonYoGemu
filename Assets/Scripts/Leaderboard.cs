@@ -83,7 +83,7 @@ public class Leaderboard
                     }
                 }
             }
-            catch(EndOfStreamException e)
+            catch(EndOfStreamException)
             {
                 Debug.LogWarning("Unable to load highscore!");
             }

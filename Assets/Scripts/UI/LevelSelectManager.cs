@@ -2,14 +2,52 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 public class LevelSelectManager : MonoBehaviour
 {
-    public GameObject GameStarter;
+    public GameObject UILeaderboard;
+    public GameObject UIPlayButton;
+    public GameObject UIModButton;
+
+    // used to update UI elemnets on start
+    public TextScoreMultiplier TextScoreMultiplierScript;
+    public ModToggle ModToggleScript;
+
+    GameMods mods;                      // which mods are active
+    Level loadedLevel;                  // the level information needed for the game
+    string selectedLevelName;           // the level selected to be played
+    bool editorFlag;                    // are we selecting a level for the editor?
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        int sceneIdx = -1;
+        MemoryStream memoryStream = new MemoryStream(SceneManagerPlus.GetCurrentData());
+        using(BinaryReader reader = new BinaryReader(memoryStream))
+        {
+            // sceneIdx, editorMode, otherData
+            sceneIdx = reader.ReadInt32();
+            // base data
+            editorFlag = reader.ReadBoolean();
+            if (editorFlag)
+            {
+                // disable all play features, change play button
+                // add create level button
+                UILeaderboard.SetActive(false);
+                UIPlayButton.SetActive(false);
+                UIModButton.SetActive(false);
+            }
+            if (sceneIdx == SceneUtility.GetBuildIndexByScenePath("Scenes/GameScene"))
+            {
+                // returning => we got more data
+                selectedLevelName = reader.ReadString();
+                mods = (GameMods)reader.ReadInt32();
+                // update
+                TextScoreMultiplierScript.UpdateScoreMultiplier(mods.GetModMultiplier());
+                ModToggleScript.UpdateButtonState(mods);
+            }
+        }
     }
 
     // Update is called once per frame
@@ -23,12 +61,92 @@ public class LevelSelectManager : MonoBehaviour
     }
 
     /**
+    * Set the current selected level
+    */
+    public void SetSelectedLevelByName(string name)
+    {
+        selectedLevelName = name;
+    }
+
+    /**
+     * 
+     */
+    public void UpdateScoreMultiplier()
+    {
+        TextScoreMultiplierScript.UpdateScoreMultiplier(mods.GetModMultiplier());
+    }
+
+    /**
+     * Start the level loading the input file and level and load the game
+     */
+    public void StartLevel()
+    {
+        if(selectedLevelName == null || selectedLevelName == "")
+        {
+            // no level selected
+            return;
+        }
+        // now load the selected input method
+        JapaneseDictionary.CreateKanaFromInputFileId(0);
+        // make the object persist into the next scene
+        MemoryStream memoryStream = new MemoryStream();
+        using (BinaryWriter writer = new BinaryWriter(memoryStream))
+        {
+            writer.Write(SceneManager.GetActiveScene().buildIndex);
+            writer.Write(editorFlag);
+            writer.Write(selectedLevelName);
+            writer.Write((int)mods);
+        }
+        SceneManagerPlus.LoadScene("GameScene", memoryStream.ToArray());
+    }
+
+    /**
      * Used to go to the main menu
      */
     public void OpenPreviousScene()
     {
-        // remove to prevent memory leak
-        Destroy(GameStarter);
         SceneManager.LoadScene("MainMenu");
+    }
+
+    /**
+     * Opens the selected level for editing or playing
+     */
+    public void OpenLevel()
+    {
+        if (selectedLevelName == null || selectedLevelName == "")
+        {
+            // no level selected
+            return;
+        }
+        // now load the selected input method
+        JapaneseDictionary.CreateKanaFromInputFileId(0);
+        // make the object persist into the next scene
+        DontDestroyOnLoad(gameObject);
+        // get the level that should be started
+        loadedLevel = LevelLoader.LoadLevelByName(selectedLevelName);
+        if (loadedLevel == null)
+        {
+            Debug.LogWarning("Unable to load level");
+        }
+        else
+        {
+            SceneManager.LoadScene("GameScene");
+        }
+    }
+
+    /**
+     * Adds a new mod to the mods
+     */
+    public void AddMod(GameMods flag)
+    {
+        mods |= flag;
+    }
+
+    /**
+     * Removes a mod from the active mods
+     */
+    public void RemoveMod(GameMods flag)
+    {
+        mods &= ~flag;
     }
 }

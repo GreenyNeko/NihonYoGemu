@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
@@ -29,11 +30,11 @@ public class GameManager : MonoBehaviour
     /**
      * instance to always access the game manager from wherever we need
      */
-    public static GameManager Instance
+    /*public static GameManager Instance
     {
         get;
         private set;
-    }
+    }*/
 
     // history handler to update the history visualizer
     public HistoryHandler ScriptHistoryHandler;
@@ -59,7 +60,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         // init
-        Instance = this;
+        //Instance = this;
         score = 0;
         correctKanji = 0;
         sloppyKanji = 0;
@@ -195,7 +196,15 @@ public class GameManager : MonoBehaviour
         // set the game as running
         running = true;
         // leave to main menu
-        SceneManager.LoadScene("LevelSelect");
+        MemoryStream memoryStream = new MemoryStream();
+        using (BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+        {
+            binaryWriter.Write(SceneManager.GetActiveScene().buildIndex);
+            binaryWriter.Write(false); // if we played a level we can't be in the editor
+            binaryWriter.Write(LevelName);
+            binaryWriter.Write((int)Mods);
+        }
+        SceneManagerPlus.LoadScene("LevelSelect", memoryStream.ToArray());
     }
 
     /**

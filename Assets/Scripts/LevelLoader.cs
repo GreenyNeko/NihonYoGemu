@@ -163,7 +163,7 @@ public class LevelLoader : MonoBehaviour
                     levelMetas.Add(levelMeta);
                 }
             }
-            catch (EndOfStreamException e)
+            catch (EndOfStreamException)
             {
                 Debug.LogWarning("Unabel to read meta file. skipping");
                 success = false;
@@ -347,7 +347,7 @@ public class LevelLoader : MonoBehaviour
                     levelMetas.Add(levelMeta);
                 }
             }
-            catch(EndOfStreamException e)
+            catch(EndOfStreamException)
             {
                 Debug.LogWarning("Unabel to read meta file. skipping");
                 success = false;

@@ -8,13 +8,12 @@ using UnityEngine;
 public class TextScoreMultiplier : MonoBehaviour
 {
     public TMPro.TMP_Text TMP_TextScoreMultiplier;
-    public GameStarter GameStarter;
 
     /**
      * When called updates the text to display the correct multiplier
      */
-    public void UpdateScoreMultiplier()
+    public void UpdateScoreMultiplier(float mult)
     {
-        TMP_TextScoreMultiplier.SetText("Score Multiplier: x" + (Mathf.Round(GameStarter.GetScoreMultiplier() * 100) / 100).ToString());
+        TMP_TextScoreMultiplier.SetText("Score Multiplier: x" + (Mathf.Round(mult * 100) / 100).ToString());
     }
 }

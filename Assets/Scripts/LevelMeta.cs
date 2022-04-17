@@ -36,7 +36,7 @@ public class LevelMeta
     /**
      * Create a new level meta given necessary parameters
      */
-    public LevelMeta(string name, float difficulty, uint totalCharacters, uint totalKanjis, string author, uint longestSentence, uint senteces, sbyte parserResult)
+    public LevelMeta(string name, float difficulty, uint totalCharacters, uint totalKanjis, string author, uint longestSentence, uint sentences, sbyte parserResult)
     {
         this.name = name;
         this.difficulty = difficulty;

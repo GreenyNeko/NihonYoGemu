@@ -7,7 +7,10 @@ using UnityEngine.UI;
  * Script that handles the list of all UI levels
  */
 public class UILevelLister : MonoBehaviour
-{
+{ 
+    // the manager of the level select scene
+    public LevelSelectManager ScriptLevelSelectManager;
+
     public GameObject NormalMenu;               // the menu that is usually used
     public GameObject LoadingScreen;            // the menu or screen when reloading
     public Transform UILevelParent;             // where to instantiate them to
@@ -384,6 +387,7 @@ public class UILevelLister : MonoBehaviour
             GameObject UILevelObject = Instantiate(UILevelPrefab, UILevelParent);
             // copy over attributes from meta
             UILevel uiLevel = UILevelObject.GetComponent<UILevel>();
+            uiLevel.ScriptLevelSelectManager = ScriptLevelSelectManager;
             uiLevel.SetAuthorName(meta.GetAuthor());
             uiLevel.SetLevelName(meta.GetLevelName());
             uiLevel.SetDifficulty(meta.GetDifficulty());

@@ -10,6 +10,9 @@ using UnityEngine.EventSystems;
  */
 public class UILevel : MonoBehaviour, IPointerClickHandler
 {
+    // reference to the level select manager
+    public LevelSelectManager ScriptLevelSelectManager;
+
     public Color colorUnselected;       // the color when the level is not sleected
     public Color colorSelected;         // the color when the level is selected
     public GameObject Panel;            // the panel UI element holding everything
@@ -128,12 +131,12 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
         {
             // select this level
             Panel.GetComponent<Image>().color = colorSelected;
-            GameStarter.Instance.SetLevelByName(TextLevelName.text);
+            ScriptLevelSelectManager.SetSelectedLevelByName(TextLevelName.text);
             LevelFinder.FlagLevelAsSelected(gameObject);
             // double click
             if (timeSinceLastClick < 0.5f)
             {
-                GameStarter.Instance.StartLevel();
+                ScriptLevelSelectManager.StartLevel();
             }
             // reset time since last click
             timeSinceLastClick = 0;

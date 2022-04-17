@@ -8,8 +8,8 @@ using UnityEngine.UI;
  */
 public class ModToggle : MonoBehaviour
 {
+    public LevelSelectManager scriptLevelSelectManager;
     public GameMods Mod;                   // Which mod is toggled by this button?
-    public GameStarter ScriptGameStarter;  // Apply mods to the gamestarter
 
     /**
      * Called by UI events, toggles the given mod in the gamestarter
@@ -18,16 +18,19 @@ public class ModToggle : MonoBehaviour
     {
         if(value)
         {
-            ScriptGameStarter.AddMod(Mod);
+            scriptLevelSelectManager.AddMod(Mod);
         }
         else
         {
-            ScriptGameStarter.RemoveMod(Mod);
+            scriptLevelSelectManager.RemoveMod(Mod);
         }
     }
 
-    public void UpdateButtonState()
+    /**
+     * Changes the button as toggled or not depending on the given state
+     */
+    public void UpdateButtonState(GameMods state)
     {
-        GetComponent<Toggle>().isOn = ScriptGameStarter.HasMod(Mod);
+        GetComponent<Toggle>().isOn = state.HasFlag(Mod);
     }
 }

@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
+using UnityEngine.SceneManagement;
 
 /**
  * This scripts manages the progress through the level.
@@ -16,12 +18,43 @@ public class LevelManager : MonoBehaviour
 
     public GameObject FuriganaPrefab;       // prefab to create new furigana elements
 
-    GameStarter gameStarter;                // for storing the instance
-
+    Level loadedLevel;
     int currLine;                           // tracks the current line
     int progress;                           // tracks how many kanjis been answered
     int prevLinesKanjiCount;                // sum of kanjis in previous lines
     int kanjiCount;                         // how many kanjis have been answered
+
+    void Awake()
+    {
+        // read from data
+        int sceneIdx = -1;
+        string selectedLevelName;
+
+        MemoryStream memoryStream = new MemoryStream(SceneManagerPlus.GetCurrentData());
+        using (BinaryReader reader = new BinaryReader(memoryStream))
+        {
+            sceneIdx = reader.ReadInt32();              // the scene we came from
+            reader.ReadBoolean();                       // editor flag is unneeded here
+            selectedLevelName = reader.ReadString();    // the level to load
+            // get the mods 
+            ScriptGameManager.Mods = (GameMods)reader.ReadInt32();
+        }
+        loadedLevel = LevelLoader.LoadLevelByName(selectedLevelName);
+        if (loadedLevel == null)
+        {
+            // failed to load level return to level select
+            Debug.LogWarning("Unable to load level. Aborting play mode");
+            memoryStream = new MemoryStream();
+            using(BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+            {
+                binaryWriter.Write(SceneManager.GetActiveScene().buildIndex);
+                binaryWriter.Write(false); // if we played a level we can't be in the editor
+                binaryWriter.Write(selectedLevelName);
+                binaryWriter.Write((int)ScriptGameManager.Mods);
+            }
+            SceneManagerPlus.LoadScene("LevelSelect", memoryStream.ToArray());
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -29,23 +62,23 @@ public class LevelManager : MonoBehaviour
         currLine = 0;
         kanjiCount = 0;
         prevLinesKanjiCount = 0;
+        // calculate score multiplier
+
         // store because we'll need it a lot
-        gameStarter = GameStarter.Instance;
-        ScriptGameManager.SetScoreMultiplier(gameStarter.GetScoreMultiplier());
+        ScriptGameManager.SetScoreMultiplier(ScriptGameManager.Mods.GetModMultiplier());
         // load furigana elements if furigana mod is active
-        if(gameStarter.HasMod(GameMods.Furigana))
+        if(ScriptGameManager.Mods.HasFlag(GameMods.Furigana))
         {
             // load furigana elements given the maximum kanjis per sentence
-            for (int i = 0; i < gameStarter.GetLevel().GetMostKanjisPerSentence(); i++)
+            for (int i = 0; i < loadedLevel.GetMostKanjisPerSentence(); i++)
             {
                 // we don't need to store a reference, we'll access them through transform.GetChild(...)
                 Instantiate(FuriganaPrefab, Furiganas.transform);
             }
         }
-        ScriptGameManager.LevelName = gameStarter.GetLevel().Name;
-        ScriptGameManager.Mods = gameStarter.GetGameMods();
+        ScriptGameManager.LevelName = loadedLevel.Name;
         // level is completed by default
-        if (gameStarter.GetLevel().GetSentenceCount() <= 0)
+        if (loadedLevel.GetSentenceCount() <= 0)
         {
             ScriptGameManager.OnEnd();
         }
@@ -63,7 +96,7 @@ public class LevelManager : MonoBehaviour
         progress = 0;
         ScriptGameManager.ResetGame();
         // level is completed by default
-        if (gameStarter.GetLevel().GetSentenceCount() <= 0)
+        if (loadedLevel.GetSentenceCount() <= 0)
         {
             ScriptGameManager.OnEnd();
         }
@@ -81,18 +114,18 @@ public class LevelManager : MonoBehaviour
         {
             // determine score
             // are ther kanjis in the current sentence
-            if (gameStarter.GetLevel().GetKanjiFromSentence(currLine).Length > 0)
+            if (loadedLevel.GetKanjiFromSentence(currLine).Length > 0)
             {
                 // clean up input (input should be what we see
                 string playerFurigana = JapaneseDictionary.ConvertRomajiToKana(input, false);
                 // compare current input vs kanji reading
-                if (playerFurigana == gameStarter.GetLevel().GetFuriganaFromKanji(kanjiCount))
+                if (playerFurigana == loadedLevel.GetFuriganaFromKanji(kanjiCount))
                 {
                     ScriptGameManager.OnCorrect();
                 }
                 else
                 {
-                    if (JapaneseDictionary.StringInReadings(playerFurigana, gameStarter.GetLevel().GetKanjiFromSentence(currLine)[progress]))
+                    if (JapaneseDictionary.StringInReadings(playerFurigana, loadedLevel.GetKanjiFromSentence(currLine)[progress]))
                     {
                         ScriptGameManager.OnSloppy();
                     }
@@ -107,13 +140,13 @@ public class LevelManager : MonoBehaviour
             // progress
             progress++;
 
-            if (progress >= gameStarter.GetLevel().GetKanjiFromSentence(currLine).Length)
+            if (progress >= loadedLevel.GetKanjiFromSentence(currLine).Length)
             {
                 // update the previous kanji counting the current kanjiCount after the last line been completed
                 prevLinesKanjiCount = kanjiCount;
                 currLine++;
                 // end of level
-                if (currLine >= gameStarter.GetLevel().GetSentenceCount())
+                if (currLine >= loadedLevel.GetSentenceCount())
                 {
                     ScriptGameManager.OnEnd();
                     return;
@@ -129,15 +162,15 @@ public class LevelManager : MonoBehaviour
     void updateTextMesh()
     {
         // are there more lines?
-        if(currLine < gameStarter.GetLevel().GetSentenceCount())
+        if(currLine < loadedLevel.GetSentenceCount())
         {
             // get the currline after the increment
-            string line = gameStarter.GetLevel().GetLine(currLine);
+            string line = loadedLevel.GetLine(currLine);
             SentencesOutput.SetText(line);
             SentencesOutput.ForceMeshUpdate();
-            int kanjiCount = gameStarter.GetLevel().GetKanjiFromSentence(currLine).Length;
+            int kanjiCount = loadedLevel.GetKanjiFromSentence(currLine).Length;
 
-            if(gameStarter.HasMod(GameMods.Furigana))
+            if(ScriptGameManager.Mods.HasFlag(GameMods.Furigana))
             {
                 // clean up furiganas a.k.a. hide old ones, and show again if updated
                 foreach(Transform child in Furiganas.transform)
@@ -148,7 +181,7 @@ public class LevelManager : MonoBehaviour
                 // determine length of longest furigana
                 for(int i = 0; i < kanjiCount; i++)
                 {
-                    int tmp = gameStarter.GetLevel().GetFuriganaFromKanji(prevLinesKanjiCount + i).Length;
+                    int tmp = loadedLevel.GetFuriganaFromKanji(prevLinesKanjiCount + i).Length;
                     if(tmp > mostKana)
                     {
                         mostKana = tmp;
@@ -160,9 +193,9 @@ public class LevelManager : MonoBehaviour
                     Furiganas.transform.GetChild(i).gameObject.SetActive(true);
                     TMPro.TMP_Text furigana = Furiganas.transform.GetChild(i).GetComponent<TMPro.TMP_Text>();
                     // get the furigana given the offset of the kanjis of previous sentences
-                    furigana.SetText(gameStarter.GetLevel().GetFuriganaFromKanji(prevLinesKanjiCount + i));
+                    furigana.SetText(loadedLevel.GetFuriganaFromKanji(prevLinesKanjiCount + i));
                     // get the kanji position
-                    int charIdx = line.IndexOf(gameStarter.GetLevel().GetKanjiFromSentence(currLine)[i]);
+                    int charIdx = line.IndexOf(loadedLevel.GetKanjiFromSentence(currLine)[i]);
                     TMPro.TMP_CharacterInfo charInfo = SentencesOutput.textInfo.characterInfo[charIdx];
                     int vertexIndex = charInfo.vertexIndex;
                     Vector3[] vertexPositions = SentencesOutput.mesh.vertices;
@@ -207,7 +240,7 @@ public class LevelManager : MonoBehaviour
             if (kanjiCount > 0 && progress < kanjiCount)
             {
                 // get current selected kanji and color it
-                int charIdx = line.IndexOf(gameStarter.GetLevel().GetKanjiFromSentence(currLine)[progress]);
+                int charIdx = line.IndexOf(loadedLevel.GetKanjiFromSentence(currLine)[progress]);
                 TMPro.TMP_CharacterInfo charInfo = SentencesOutput.textInfo.characterInfo[charIdx];
                 int vertexIndex = charInfo.vertexIndex;
                 int meshIndex = charInfo.materialReferenceIndex;
@@ -225,6 +258,6 @@ public class LevelManager : MonoBehaviour
     // updates the image showing the level progress
     void updateProgressImage()
     {
-        ProgressImage.fillAmount = (float)(kanjiCount + currLine) / (gameStarter.GetLevel().GetKanjiCount() + gameStarter.GetLevel().GetSentenceCount());
+        ProgressImage.fillAmount = (float)(kanjiCount + currLine) / (loadedLevel.GetKanjiCount() + loadedLevel.GetSentenceCount());
     }
 }
