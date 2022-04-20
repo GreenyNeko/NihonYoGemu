@@ -90,14 +90,18 @@ public class UILevelLister : MonoBehaviour
         }
         // select the new one
         idCurrentlySelected = uiLevelObjects.IndexOf(level);
-        // only update if a new level has been selected
-        if(prevSelected >= 0 && uiLevelObjects[prevSelected].gameObject != level.gameObject)
+        // only update if leaderboard is enabled
+        if(ScriptUILeaderboard.isActiveAndEnabled)
         {
-            ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
-        }
-        else if(prevSelected < 0)
-        {
-            ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+            // only update if a new level has been selected
+            if (prevSelected >= 0 && uiLevelObjects[prevSelected].gameObject != level.gameObject)
+            {
+                ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+            }
+            else if (prevSelected < 0)
+            {
+                ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+            }
         }
     }
 

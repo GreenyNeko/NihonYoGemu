@@ -6,6 +6,7 @@ using System.IO;
 
 public class LevelSelectManager : MonoBehaviour
 {
+    public GameObject ButtonCreateLevel;
     public GameObject UILeaderboard;
     public GameObject UIPlayButton;
     public GameObject UIModButton;
@@ -30,6 +31,7 @@ public class LevelSelectManager : MonoBehaviour
             sceneIdx = reader.ReadInt32();
             // base data
             editorFlag = reader.ReadBoolean();
+            ButtonCreateLevel.SetActive(editorFlag);
             if (editorFlag)
             {
                 // disable all play features, change play button
@@ -37,6 +39,7 @@ public class LevelSelectManager : MonoBehaviour
                 UILeaderboard.SetActive(false);
                 UIPlayButton.SetActive(false);
                 UIModButton.SetActive(false);
+                ButtonCreateLevel.SetActive(true);
             }
             if (sceneIdx == SceneUtility.GetBuildIndexByScenePath("Scenes/GameScene"))
             {
@@ -69,7 +72,7 @@ public class LevelSelectManager : MonoBehaviour
     }
 
     /**
-     * 
+     * Updates the text multiplier given the current mods
      */
     public void UpdateScoreMultiplier()
     {
@@ -77,7 +80,7 @@ public class LevelSelectManager : MonoBehaviour
     }
 
     /**
-     * Start the level loading the input file and level and load the game
+     * Starts the respective scene given the data and mode
      */
     public void StartLevel()
     {
@@ -97,7 +100,15 @@ public class LevelSelectManager : MonoBehaviour
             writer.Write(selectedLevelName);
             writer.Write((int)mods);
         }
-        SceneManagerPlus.LoadScene("GameScene", memoryStream.ToArray());
+        if(editorFlag)
+        {
+            SceneManagerPlus.LoadScene("EditorScene", memoryStream.ToArray());
+        }
+        else
+        {
+            SceneManagerPlus.LoadScene("GameScene", memoryStream.ToArray());
+        }
+        
     }
 
     /**
@@ -109,29 +120,20 @@ public class LevelSelectManager : MonoBehaviour
     }
 
     /**
-     * Opens the selected level for editing or playing
+     * Start editor to create a new level
      */
-    public void OpenLevel()
+    public void CreateLevel()
     {
-        if (selectedLevelName == null || selectedLevelName == "")
+        string empty = "";
+        MemoryStream memoryStream = new MemoryStream();
+        using (BinaryWriter writer = new BinaryWriter(memoryStream))
         {
-            // no level selected
-            return;
+            writer.Write(SceneManager.GetActiveScene().buildIndex);
+            writer.Write(editorFlag);
+            writer.Write(empty);
+            writer.Write(0);
         }
-        // now load the selected input method
-        JapaneseDictionary.CreateKanaFromInputFileId(0);
-        // make the object persist into the next scene
-        DontDestroyOnLoad(gameObject);
-        // get the level that should be started
-        loadedLevel = LevelLoader.LoadLevelByName(selectedLevelName);
-        if (loadedLevel == null)
-        {
-            Debug.LogWarning("Unable to load level");
-        }
-        else
-        {
-            SceneManager.LoadScene("GameScene");
-        }
+        SceneManagerPlus.LoadScene("EditorScene", memoryStream.ToArray());
     }
 
     /**
