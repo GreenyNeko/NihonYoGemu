@@ -29,6 +29,7 @@ public class EditorManager : MonoBehaviour
     string prevSentence;
     (int, string)[] prevReadings;
     string levelName; // the level name
+    string levelAuthor;
     bool unsavedChanges;
     int currentReading;
     UIEditorSentence sentenceToEdit;
@@ -111,6 +112,31 @@ public class EditorManager : MonoBehaviour
         unsavedChanges = false;
         ButtonSave.interactable = false;
         // save in file
+        using (StreamWriter streamWriter = new StreamWriter("Levels/" + levelName + ".nyl"))
+        {
+            // write user meta data
+            streamWriter.Write("[author=" + levelAuthor + "]\n");
+            // write sentences
+            var sentences = ScriptSentenceLister.GetSentences();
+            for (int i = 0; i < sentences.Count; i++)
+            {
+                // write sentence
+                streamWriter.Write(sentences[i]);
+                // save readings
+                (int, string)[] readings = ScriptSentenceLister.GetReadings(i);
+                if(readings != null)
+                {
+                    foreach (var reading in readings)
+                    {
+                        streamWriter.Write("," + reading.Item2);
+                    }
+                }
+                if(i < sentences.Count - 1)
+                {
+                    streamWriter.Write("\n");
+                }
+            }
+        }
     }
 
     /**
@@ -240,10 +266,13 @@ public class EditorManager : MonoBehaviour
     {
         // update all reading related fields
         string sentence = sentenceToEdit.TextSentence.text;
-        var kanjiReading = sentenceToEdit.GetReading(currentReading);
-        InputReading.SetTextWithoutNotify(kanjiReading.Item2);
-        // substring starting at -2 going 5 chars, keeping invalid access in mind
-        TextSnippet.SetText(sentence.Substring(Mathf.Clamp(kanjiReading.Item1 - 2, 0, sentence.Length - 1), Mathf.Clamp(sentence.Length - kanjiReading.Item1, 0, 5)));
+        if(sentenceToEdit.GetReadingCount() > 0)
+        {
+            var kanjiReading = sentenceToEdit.GetReading(currentReading);
+            InputReading.SetTextWithoutNotify(kanjiReading.Item2);
+            // substring starting at -2 going 5 chars, keeping invalid access in mind
+            TextSnippet.SetText(sentence.Substring(Mathf.Clamp(kanjiReading.Item1 - 2, 0, sentence.Length - 1), Mathf.Clamp(sentence.Length - kanjiReading.Item1, 0, 5)));
+        }
     }
 
     /**

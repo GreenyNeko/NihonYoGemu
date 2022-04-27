@@ -94,4 +94,36 @@ public class SentenceLister : MonoBehaviour
         // pass information to editor to edit
         ScriptEditorManager.EditSentence(uiEditorSentence);
     }
+
+    /**
+     * <summary>Returns an array of the sentences</summary>
+     */
+    public List<string> GetSentences()
+    {
+        // converts the gameobjects to the strings contained in their UIEditorSentences
+        return uiSentences.ConvertAll<string>(x =>
+        {
+            if (x.GetComponent<UIEditorSentence>() != null)
+            {
+                return x.GetComponent<UIEditorSentence>().TextSentence.text;
+            }
+            else
+            {
+                return "";
+            }
+        });
+    }
+
+    /**
+     * <summary>Returns an array of readings of the xths sentence</summary>
+     */
+    public (int, string)[] GetReadings(int index)
+    {
+        // -1 because the last element is not a UIEditorSentence but the add sentence button
+        if(index > 0 && index < uiSentences.Count - 1)
+        {
+            return uiSentences[index].GetComponent<UIEditorSentence>().GetReadings();
+        }
+        return null;
+    }
 }
