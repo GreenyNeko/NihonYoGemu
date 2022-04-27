@@ -2544,6 +2544,7 @@ MonoBehaviour:
   TextLevelName: {fileID: 337521702}
   SentenceEditorMenu: {fileID: 1252522037}
   UnsavedChangesWindow: {fileID: 169160805}
+  ButtonSaveSentence: {fileID: 1232020628}
   ButtonSave: {fileID: 77184266}
   TextSnippet: {fileID: 354948784}
   InputSentence: {fileID: 398678587}

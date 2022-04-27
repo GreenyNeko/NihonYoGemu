@@ -13,6 +13,7 @@ public class EditorManager : MonoBehaviour
     public GameObject TextLevelName;
     public GameObject SentenceEditorMenu;
     public GameObject UnsavedChangesWindow;
+    public GameObject ButtonSaveSentence;
 
     // reference to save button
     public Button ButtonSave;
@@ -144,6 +145,7 @@ public class EditorManager : MonoBehaviour
         string sentence = sentenceToEdit.TextSentence.GetParsedText();
         InputSentence.SetTextWithoutNotify(sentence);
         UpdateReading();
+        UpdateButtonSaveSentence();
     }
 
     /**
@@ -184,6 +186,7 @@ public class EditorManager : MonoBehaviour
         sentenceToEdit.SetKanjiReadings(newReadings.ToArray());
         currentReading = 0;
         UpdateReading();
+        UpdateButtonSaveSentence();
     }
 
     /**
@@ -200,6 +203,7 @@ public class EditorManager : MonoBehaviour
     public void SaveReading(string reading)
     {
         sentenceToEdit.SetKanjiReading(currentReading, reading);
+        UpdateButtonSaveSentence();
     }
 
     /**
@@ -240,5 +244,20 @@ public class EditorManager : MonoBehaviour
         InputReading.SetTextWithoutNotify(kanjiReading.Item2);
         // substring starting at -2 going 5 chars, keeping invalid access in mind
         TextSnippet.SetText(sentence.Substring(Mathf.Clamp(kanjiReading.Item1 - 2, 0, sentence.Length - 1), Mathf.Clamp(sentence.Length - kanjiReading.Item1, 0, 5)));
+    }
+
+    /**
+     * <summary>Determines interactivity of the save sentence button given the readings</summary>
+     */
+    void UpdateButtonSaveSentence()
+    {
+        ButtonSaveSentence.GetComponent<Button>().interactable = true;
+        if (sentenceToEdit.GetReadingCount() > 0)
+        {
+            if(sentenceToEdit.HasEmptyReading())
+            {
+                ButtonSaveSentence.GetComponent<Button>().interactable = false;
+            }
+        }
     }
 }

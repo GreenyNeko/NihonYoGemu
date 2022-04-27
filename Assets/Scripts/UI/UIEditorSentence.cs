@@ -77,6 +77,11 @@ public class UIEditorSentence : MonoBehaviour
         return this.readings.ToArray();
     }
 
+    public bool HasEmptyReading()
+    {
+        return this.readings.Exists(x => { return x.Item2 == ""; });
+    }
+
     /**
      * Delete this sentence
      */
