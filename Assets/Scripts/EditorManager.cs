@@ -17,11 +17,19 @@ public class EditorManager : MonoBehaviour
     // reference to save button
     public Button ButtonSave;
 
+    // references to sentence editor elements
+    public TMPro.TMP_Text TextSnippet;
+    public TMPro.TMP_InputField InputSentence;
+    public TMPro.TMP_InputField InputReading;
+
     // reference to sentence lister
     public SentenceLister ScriptSentenceLister;
 
+    string prevSentence;
+    (int, string)[] prevReadings;
     string levelName; // the level name
     bool unsavedChanges;
+    int currentReading;
     UIEditorSentence sentenceToEdit;
 
     void Awake()
@@ -65,6 +73,9 @@ public class EditorManager : MonoBehaviour
         
     }
 
+    /**
+     * <summary>Attempt to leave the editor but ask user if there are unsaved changes</summary>
+     */
     public void TryLeavingEditor()
     {
         if(!unsavedChanges)
@@ -122,8 +133,112 @@ public class EditorManager : MonoBehaviour
     /**
      * <summary>Starts the screen to edit the sentence and then applies the changes to the provided object.</summary>
      */
-    public void EditSentence(UIEditorSentence uIEditorSentence)
+    public void EditSentence(UIEditorSentence uiEditorSentence)
     {
-        // TODO: implement
+        currentReading = 0;
+        sentenceToEdit = uiEditorSentence;
+        prevSentence = sentenceToEdit.TextSentence.GetParsedText();
+        prevReadings = sentenceToEdit.GetReadings();
+        LevelEditorMenu.SetActive(false);
+        SentenceEditorMenu.SetActive(true);
+        string sentence = sentenceToEdit.TextSentence.GetParsedText();
+        InputSentence.SetTextWithoutNotify(sentence);
+        UpdateReading();
+    }
+
+    /**
+     * <summary>Updates the readings given the new sentence</summary>
+     */
+    public void UpdateSentence(string NewSentence)
+    {
+        string prevSentence = sentenceToEdit.TextSentence.text;
+        int kanjiCountPrev = 0;
+        // needed for context
+        for(int i = 0; i < this.prevSentence.Length; i++)
+        {
+            if(JapaneseDictionary.IsKanji(this.prevSentence[i].ToString()))
+            {
+                kanjiCountPrev++;
+            }
+        }
+        var newReadings = new List<(int, string)>();
+        sentenceToEdit.TextSentence.SetText(NewSentence);
+        // create new readings for each kanji
+        for(int i = 0; i < NewSentence.Length; i++)
+        {
+            if(JapaneseDictionary.IsKanji(NewSentence[i].ToString()))
+            {
+                newReadings.Add((i, ""));
+            }
+        }
+        // if kanji acount is same
+        if(newReadings.Count == kanjiCountPrev)
+        {
+            // assuming only non kanji were changed => copy readings over
+            for(int i = 0; i < newReadings.Count; i++)
+            {
+                newReadings[i] = (newReadings[i].Item1, sentenceToEdit.GetReading(i).Item2);
+            }
+        }
+        
+        sentenceToEdit.SetKanjiReadings(newReadings.ToArray());
+        currentReading = 0;
+        UpdateReading();
+    }
+
+    /**
+     * <summary>Save the current sentence changes</summary>
+     */
+    public void SaveSentence()
+    {
+        NotifyOfChanges();
+    }
+
+    /**
+     * <summary>Saves the current reading given the current kanji reading being edited</summary>
+     */
+    public void SaveReading(string reading)
+    {
+        sentenceToEdit.SetKanjiReading(currentReading, reading);
+    }
+
+    /**
+     * <summary>Cancel editing the sentence and don't change</summary>
+     */
+    public void UndoSentenceChanges()
+    {
+        sentenceToEdit.TextSentence.SetText(prevSentence);
+        sentenceToEdit.SetKanjiReadings(prevReadings);
+    }
+
+    /**
+     * Moves the reading over
+     */
+    public void NextReading()
+    {
+        currentReading = Mathf.Clamp(currentReading + 1, 0, sentenceToEdit.GetReadingCount() - 1);
+        UpdateReading();
+    }
+
+    /**
+     * Moves the reading over
+     */
+    public void PrevReading()
+    {
+        currentReading = Mathf.Clamp(currentReading - 1, 0, sentenceToEdit.GetReadingCount() - 1);
+        UpdateReading();
+    }
+
+    /**
+     * <summary>Update the reading UI in the sentence editor</summary>
+     */
+    void UpdateReading()
+    {
+        // update all reading related fields
+        string sentence = sentenceToEdit.TextSentence.text;
+        var kanjiReading = sentenceToEdit.GetReading(currentReading);
+        InputReading.SetTextWithoutNotify(kanjiReading.Item2);
+        // substring starting at -2 going 5 chars, keeping invalid access in mind
+        TextSnippet.SetText(sentence.Substring(Mathf.Clamp(kanjiReading.Item1 - 2, 0, sentence.Length - 1), Mathf.Clamp(sentence.Length - kanjiReading.Item1, 0, 5)));
     }
 }

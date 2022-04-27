@@ -25,13 +25,15 @@ public class SentenceLister : MonoBehaviour
             uiSentence.GetComponent<UIEditorSentence>().ScriptSentenceLister = this;
             var scriptRef = uiSentence.GetComponent<UIEditorSentence>();
             scriptRef.SetSentence(level.GetLine(i));
-            List<string> readings = new List<string>();
-            for(int j = 0; j < level.GetKanjiFromSentence(i).Length; j++)
+            (int, string)[] readingsWithPos = new (int, string)[level.GetKanjiFromSentence(i).Length];
+            for (int j = 0; j < level.GetKanjiFromSentence(i).Length; j++)
             {
-                readings.Add(level.GetFuriganaFromKanji(j + kanjiCount));
+                int position = level.GetLine(i).IndexOf(level.GetKanjiFromSentence(i)[j]);
+                string reading = level.GetFuriganaFromKanji(j + kanjiCount);
+                readingsWithPos[j] = (position, reading);
             }
             kanjiCount += level.GetKanjiFromSentence(i).Length;
-            scriptRef.SetReadings(readings.ToArray());
+            scriptRef.SetKanjiReadings(readingsWithPos);
             uiSentences.Add(uiSentence);
         }
         PopulateEmpty();

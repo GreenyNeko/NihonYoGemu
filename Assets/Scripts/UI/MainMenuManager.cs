@@ -41,7 +41,6 @@ public class MainMenuManager : MonoBehaviour
         {
             writer.Write(SceneManager.GetActiveScene().buildIndex);
             writer.Write(false);
-            writer.Flush();
         }
         SceneManagerPlus.LoadScene("LevelSelect", memoryStream.ToArray());
     }
@@ -56,7 +55,6 @@ public class MainMenuManager : MonoBehaviour
         {
             writer.Write(SceneManager.GetActiveScene().buildIndex);
             writer.Write(true);
-            writer.Flush();
         }
         SceneManagerPlus.LoadScene("LevelSelect", memoryStream.ToArray());
     }
