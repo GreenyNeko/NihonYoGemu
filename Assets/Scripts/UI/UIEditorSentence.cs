@@ -17,7 +17,7 @@ public class UIEditorSentence : MonoBehaviour
 
     // the attributes of this ui editor sentence
     string sentence;
-    List<(int, string)> readings;
+    List<(int, string)> readings = new List<(int, string)>();
 
     /**
      * <summary>Get the account of readings</summary>

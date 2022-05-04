@@ -51,6 +51,7 @@ public class LevelSelectManager : MonoBehaviour
                 ModToggleScript.UpdateButtonState(mods);
             }
         }
+        LevelLoader.SoftReloadLevels();
     }
 
     // Update is called once per frame

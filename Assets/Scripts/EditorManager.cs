@@ -14,6 +14,9 @@ public class EditorManager : MonoBehaviour
     public GameObject SentenceEditorMenu;
     public GameObject UnsavedChangesWindow;
     public GameObject ButtonSaveSentence;
+    public GameObject InputLevelName;
+    public GameObject InputAuthorName;
+    public GameObject ButtonSaveInfo;
 
     // reference to save button
     public Button ButtonSave;
@@ -55,6 +58,8 @@ public class EditorManager : MonoBehaviour
             WindowLevelCreator.SetActive(false);
             // load the level and populate scene
         }
+        InputLevelName.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(levelName);
+        InputAuthorName.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(levelAuthor);
         LevelEditorMenu.SetActive(true);
         SentenceEditorMenu.SetActive(false);
         UnsavedChangesWindow.SetActive(false);
@@ -66,13 +71,13 @@ public class EditorManager : MonoBehaviour
         if(levelName != "")
         {
             Level level = LevelLoader.LoadLevelByName(levelName);
+            levelAuthor = level.Author;
             ScriptSentenceLister.Populate(level);
         }
         else
         {
             ScriptSentenceLister.PopulateEmpty();
         }
-        
     }
 
     /**
@@ -145,7 +150,16 @@ public class EditorManager : MonoBehaviour
     public void SetName(TMPro.TMP_Text inputFieldName)
     {
         levelName = inputFieldName.text;
-        TextLevelName.GetComponent<TMPro.TMP_Text>().SetText(levelName);
+        NotifyOfChanges();
+    }
+
+    /**
+ * <summary>Sets the level name</summary>
+ */
+    public void SetAuthor(TMPro.TMP_Text inputFieldAuthor)
+    {
+        levelAuthor = inputFieldAuthor.text;
+        NotifyOfChanges();
     }
 
     /**
@@ -257,6 +271,32 @@ public class EditorManager : MonoBehaviour
     {
         currentReading = Mathf.Clamp(currentReading - 1, 0, sentenceToEdit.GetReadingCount() - 1);
         UpdateReading();
+    }
+
+    /**
+     * <summary>Updates the button used to save level info.</summary>
+     */
+    public void UpdateButtonSaveInfo()
+    {
+        bool interactable = true;
+        if (InputAuthorName.GetComponent<TMPro.TMP_InputField>().text.Length <= 1)
+        {
+            interactable = false;
+        }
+        if (InputLevelName.GetComponent<TMPro.TMP_InputField>().text.Length <= 1)
+        {
+            interactable = false;
+        }
+        ButtonSaveInfo.GetComponent<Button>().interactable = interactable;
+    }
+
+    /**
+     * <summary>Updates the info fields for the level</summary>
+     */
+    public void UpdateLevelInfoInputFields()
+    {
+        Debug.Log(levelName);
+
     }
 
     /**

@@ -35,6 +35,7 @@ public class UILevelLister : MonoBehaviour
         PlayButton.GetComponent<Button>().interactable = false;
         LoadingScreen.SetActive(false);
         createUILevelObjects();
+        StartCoroutine(ReloadLevels(true));
     }
 
     void Update()
