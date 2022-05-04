@@ -58,8 +58,6 @@ public class EditorManager : MonoBehaviour
             WindowLevelCreator.SetActive(false);
             // load the level and populate scene
         }
-        InputLevelName.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(levelName);
-        InputAuthorName.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(levelAuthor);
         LevelEditorMenu.SetActive(true);
         SentenceEditorMenu.SetActive(false);
         UnsavedChangesWindow.SetActive(false);
@@ -73,6 +71,8 @@ public class EditorManager : MonoBehaviour
             Level level = LevelLoader.LoadLevelByName(levelName);
             levelAuthor = level.Author;
             ScriptSentenceLister.Populate(level);
+            InputLevelName.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(levelName);
+            InputAuthorName.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(levelAuthor);
         }
         else
         {
