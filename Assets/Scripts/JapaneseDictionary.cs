@@ -722,7 +722,34 @@ public static class JapaneseDictionary
             }
         }
         return newStr;
+    }
 
+    /**
+     * <summary>Returns what kind of kana  the given sentence is.</summary>
+     * <returns>0 - no japanese characters are contained
+     * 1 - hiragana flag
+     * 2 - katakana flag
+     * 4 - kanji flag</returns>
+     */
+    public static int GetKanaType(string sentence)
+    {
+        int flags = 0;
+        foreach (char c in sentence)
+        {
+            if (JapaneseDictionary.IsKanji(c.ToString()))
+            {
+                flags |= 4;
+            }
+            if (kana.Exists(k => { return k.GetCharacter() == c.ToString() && k.IsHiragana(); }))
+            {
+                flags |= 1;
+            }
+            if (kana.Exists(k => { return k.GetCharacter() == c.ToString() && !k.IsHiragana(); }))
+            {
+                flags |= 2;
+            }
+        }
+        return flags;
     }
 }
 

@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Text.RegularExpressions;
 
 public class EditorManager : MonoBehaviour
 {
@@ -279,11 +280,26 @@ public class EditorManager : MonoBehaviour
     public void UpdateButtonSaveInfo()
     {
         bool interactable = true;
-        if (InputAuthorName.GetComponent<TMPro.TMP_InputField>().text.Length <= 1)
+        string authorInput = InputAuthorName.GetComponent<TMPro.TMP_InputField>().text;
+        string levelInput = InputLevelName.GetComponent<TMPro.TMP_InputField>().text;
+        // author field empty
+        if (authorInput.Length <= 0)
         {
             interactable = false;
         }
-        if (InputLevelName.GetComponent<TMPro.TMP_InputField>().text.Length <= 1)
+        // author contains breaking characters
+        if(authorInput.Contains("[") || authorInput.Contains("]"))
+        {
+            interactable = false;
+        }
+        // level name field empty
+        if (levelInput.Length <= 0)
+        {
+            interactable = false;
+        }
+        // level name contains characters incompatible with windows names
+        Match match = Regex.Match(levelInput, "^([a-zA-Z0-9_ ]|-)+$");
+        if (!match.Success)
         {
             interactable = false;
         }
@@ -295,7 +311,6 @@ public class EditorManager : MonoBehaviour
      */
     public void UpdateLevelInfoInputFields()
     {
-        Debug.Log(levelName);
 
     }
 
@@ -326,6 +341,23 @@ public class EditorManager : MonoBehaviour
             if(sentenceToEdit.HasEmptyReading())
             {
                 ButtonSaveSentence.GetComponent<Button>().interactable = false;
+            }
+            // check each reading
+            for(int i = 0; i < sentenceToEdit.GetReadingCount(); i++)
+            {
+                // check if the reading only consists of hiragana
+                if (JapaneseDictionary.GetKanaType(sentenceToEdit.GetReading(i).Item2) != 1)
+                {
+                    // if it's only katakana we can convert!
+                    if (JapaneseDictionary.GetKanaType(sentenceToEdit.GetReading(i).Item2) == 2)
+                    {
+                        sentenceToEdit.SetKanjiReading(i, JapaneseDictionary.ConvertKanaToKana(sentenceToEdit.GetReading(i).Item2));
+                    }
+                    else
+                    {
+                        ButtonSaveSentence.GetComponent<Button>().interactable = false;
+                    } 
+                }
             }
         }
     }
