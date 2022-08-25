@@ -352,7 +352,6 @@ public class EditorManager : MonoBehaviour
     {
         string warning = "";
         ButtonSaveSentence.GetComponent<Button>().interactable = true;
-        Debug.Log(InputSentence.text);
         if (InputSentence.text.Contains(","))
         {
             warning = "Sentence contains ASCII commas that will be converted to Japanese commas.\n分の読点はASCIIです。日本の読点までを変える。";
@@ -364,23 +363,25 @@ public class EditorManager : MonoBehaviour
                 ButtonSaveSentence.GetComponent<Button>().interactable = false;
                 warning = "Missing Furigana!\nふりがながありません。";
             }
-            // check each reading
-            for(int i = 0; i < sentenceToEdit.GetReadingCount(); i++)
+            else
             {
-                int kanaType = JapaneseDictionary.GetKanaType(sentenceToEdit.GetReading(i).Item2);
-                Debug.Log(sentenceToEdit.GetReading(i).Item2.ToString() + " " + kanaType.ToString());
-                // check if the reading only consists of hiragana
-                if (kanaType != 1)
+                // check each reading
+                for (int i = 0; i < sentenceToEdit.GetReadingCount(); i++)
                 {
-                    // if it's only katakana we can convert!
-                    if (kanaType == 2)
+                    int kanaType = JapaneseDictionary.GetKanaType(sentenceToEdit.GetReading(i).Item2);
+                    // check if the reading only consists of hiragana
+                    if (kanaType != 1)
                     {
-                        sentenceToEdit.SetKanjiReading(i, JapaneseDictionary.ConvertKanaToKana(sentenceToEdit.GetReading(i).Item2));
-                    }
-                    else
-                    {
-                        ButtonSaveSentence.GetComponent<Button>().interactable = false;
-                        warning = "Furigana contains non-hiragana characters!\nふりがながひらがなではありません！";
+                        // if it's only katakana we can convert!
+                        if (kanaType == 2)
+                        {
+                            sentenceToEdit.SetKanjiReading(i, JapaneseDictionary.ConvertKanaToKana(sentenceToEdit.GetReading(i).Item2));
+                        }
+                        else
+                        {
+                            ButtonSaveSentence.GetComponent<Button>().interactable = false;
+                            warning = "Furigana contains non-hiragana characters!\nふりがながひらがなではありません！";
+                        }
                     }
                 }
             }
