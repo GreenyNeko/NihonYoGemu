@@ -11,13 +11,17 @@ public class EditorManager : MonoBehaviour
     // references to different menues
     public GameObject WindowLevelCreator;
     public GameObject LevelEditorMenu;
-    public GameObject TextLevelName;
     public GameObject SentenceEditorMenu;
     public GameObject UnsavedChangesWindow;
+
+    // UI elements
     public GameObject ButtonSaveSentence;
     public GameObject InputLevelName;
     public GameObject InputAuthorName;
     public GameObject ButtonSaveInfo;
+    public GameObject TextLevelName;
+    public GameObject TextFeedbackInfo;
+    public GameObject TextFeedbackSentence;
 
     // reference to save button
     public Button ButtonSave;
@@ -67,6 +71,7 @@ public class EditorManager : MonoBehaviour
 
     void Start()
     {
+        // load level data
         if(levelName != "")
         {
             Level level = LevelLoader.LoadLevelByName(levelName);
@@ -126,6 +131,8 @@ public class EditorManager : MonoBehaviour
             var sentences = ScriptSentenceLister.GetSentences();
             for (int i = 0; i < sentences.Count; i++)
             {
+                // replace ASCII comma with japense to prevent file from breaking
+                sentences[i] = sentences[i].Replace(",", "、");
                 // write sentence
                 streamWriter.Write(sentences[i]);
                 // save readings
@@ -282,28 +289,36 @@ public class EditorManager : MonoBehaviour
         bool interactable = true;
         string authorInput = InputAuthorName.GetComponent<TMPro.TMP_InputField>().text;
         string levelInput = InputLevelName.GetComponent<TMPro.TMP_InputField>().text;
+        string warning = "";
         // author field empty
         if (authorInput.Length <= 0)
         {
             interactable = false;
+            warning = "Author is empty\n作者名がありません。";
         }
         // author contains breaking characters
         if(authorInput.Contains("[") || authorInput.Contains("]"))
         {
             interactable = false;
+            warning = "Author cannot contain \"[\" and \"]\".\n作者名に「[」と「]」は使用できません。";
         }
         // level name field empty
         if (levelInput.Length <= 0)
         {
             interactable = false;
+            warning = "Level name is empty\nレベル名がありません。";
         }
         // level name contains characters incompatible with windows names
         Match match = Regex.Match(levelInput, "^([a-zA-Z0-9_ ]|-)+$");
         if (!match.Success)
         {
             interactable = false;
+            warning = "Level name only supports alphanumeric, space, \"-\", and \"_\"\n作者名に英数文字とスペースと「-」と「_」は使えます。";
         }
         ButtonSaveInfo.GetComponent<Button>().interactable = interactable;
+        
+        // set message if there's a warning
+        TextFeedbackInfo.GetComponent<TMPro.TMP_Text>().SetText(warning);
     }
 
     /**
@@ -335,30 +350,42 @@ public class EditorManager : MonoBehaviour
      */
     void UpdateButtonSaveSentence()
     {
+        string warning = "";
         ButtonSaveSentence.GetComponent<Button>().interactable = true;
+        Debug.Log(InputSentence.text);
+        if (InputSentence.text.Contains(","))
+        {
+            warning = "Sentence contains ASCII commas that will be converted to Japanese commas.\n分の読点はASCIIです。日本の読点までを変える。";
+        }
         if (sentenceToEdit.GetReadingCount() > 0)
         {
             if(sentenceToEdit.HasEmptyReading())
             {
                 ButtonSaveSentence.GetComponent<Button>().interactable = false;
+                warning = "Missing Furigana!\nふりがながありません。";
             }
             // check each reading
             for(int i = 0; i < sentenceToEdit.GetReadingCount(); i++)
             {
+                int kanaType = JapaneseDictionary.GetKanaType(sentenceToEdit.GetReading(i).Item2);
+                Debug.Log(sentenceToEdit.GetReading(i).Item2.ToString() + " " + kanaType.ToString());
                 // check if the reading only consists of hiragana
-                if (JapaneseDictionary.GetKanaType(sentenceToEdit.GetReading(i).Item2) != 1)
+                if (kanaType != 1)
                 {
                     // if it's only katakana we can convert!
-                    if (JapaneseDictionary.GetKanaType(sentenceToEdit.GetReading(i).Item2) == 2)
+                    if (kanaType == 2)
                     {
                         sentenceToEdit.SetKanjiReading(i, JapaneseDictionary.ConvertKanaToKana(sentenceToEdit.GetReading(i).Item2));
                     }
                     else
                     {
                         ButtonSaveSentence.GetComponent<Button>().interactable = false;
-                    } 
+                        warning = "Furigana contains non-hiragana characters!\nふりがながひらがなではありません！";
+                    }
                 }
             }
         }
+        // set message if there's a warning
+        TextFeedbackSentence.GetComponent<TMPro.TMP_Text>().SetText(warning);
     }
 }
