@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class SentenceLister : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class SentenceLister : MonoBehaviour
 
     List<GameObject> uiSentences = new List<GameObject>();
 
+    List<UnityAction> actionsMoveUp = new List<UnityAction>(), actionsMoveDown = new List<UnityAction>();
     /**
      * Populate with the existing sentences
      */
@@ -23,6 +25,27 @@ public class SentenceLister : MonoBehaviour
         {
             GameObject uiSentence = Instantiate(PrefabEditorSentence, Content.transform);
             uiSentence.GetComponent<UIEditorSentence>().ScriptSentenceLister = this;
+            
+            if (i > 0)
+            {
+                int a = i;
+                actionsMoveUp.Add(new UnityAction(delegate { SwapElements(a, a - 1); }));
+            }
+            else
+            {
+                actionsMoveUp.Add(new UnityAction(delegate { }));
+            }
+            if (i < level.GetSentenceCount() - 1)
+            {
+                int a = i;
+                actionsMoveDown.Add(new UnityAction(delegate { SwapElements(a, a + 1); }));
+            }
+            else
+            {
+                actionsMoveDown.Add(new UnityAction(delegate { }));
+            }
+            uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[i]);
+            uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[i]);
             var scriptRef = uiSentence.GetComponent<UIEditorSentence>();
             scriptRef.SetSentence(level.GetLine(i));
             (int, string)[] readingsWithPos = new (int, string)[level.GetKanjiFromSentence(i).Length];
@@ -56,11 +79,31 @@ public class SentenceLister : MonoBehaviour
      */
     public void AddNewSentence()
     {
+        // add new sentences
         GameObject uiSentence = Instantiate(PrefabEditorSentence, Content.transform);
         uiSentence.GetComponent<UIEditorSentence>().ScriptSentenceLister = this;
+        if (uiSentences.Count - 3 > 0)
+        {
+            actionsMoveUp.Add(new UnityAction(() => { SwapElements(uiSentences.Count - 2, uiSentences.Count - 3); }));
+        }
+        else
+        {
+            actionsMoveUp.Add(new UnityAction(() => { }));
+        }
+        actionsMoveDown.Add(new UnityAction(() => { }));
+        uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[uiSentences.Count - 2]);
+        uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count - 2]);
         uiSentences.Insert(uiSentences.Count - 1, uiSentence);
         UpdateElementPositioning();
         ScriptEditorManager.NotifyOfChanges();
+        // update previous move down action
+        if(uiSentences.Count > 2)
+        {
+            var prevUISentence = uiSentences[uiSentences.Count - 2].GetComponent<UIEditorSentence>();
+            prevUISentence.UnregisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count - 3]);
+            actionsMoveDown[uiSentences.Count - 2] = (new UnityAction(() => { SwapElements(uiSentences.Count - 2, uiSentences.Count - 1); }));
+            prevUISentence.RegisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count - 3]);
+        }
     }
 
     public void DeleteSentenceAt(int index)
@@ -68,6 +111,35 @@ public class SentenceLister : MonoBehaviour
         // remove from list and destroy the gameobject
         GameObject uiGameObject = uiSentences[index];
         uiSentences.RemoveAt(index);
+        bool lastElement = index == uiSentences.Count - 2;
+        // if last element was deleted
+        if(lastElement && uiSentences.Count > 1)
+        {
+            // unregister down event of the new last element
+            uiSentences[index - 1].GetComponent<UIEditorSentence>().UnregisterButtonMoveDownCallback(actionsMoveDown[index - 1]);
+            // register empty
+            actionsMoveDown[index - 1] = (new UnityAction(delegate { }));
+            uiSentences[index - 1].GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[index - 1]);
+        }
+        // update all further events
+        for (int i = 0; i + index < uiSentences.Count - 1; i++)
+        {
+            // unregister current events
+            uiSentences[i + index].GetComponent<UIEditorSentence>().UnregisterButtonMoveUpCallback(actionsMoveUp[i + index + 1]);
+            uiSentences[i + index].GetComponent<UIEditorSentence>().UnregisterButtonMoveDownCallback(actionsMoveDown[i + index + 1]);
+
+            // register the correct ones respectively
+            uiSentences[i + index].GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[i + index]);
+            // update last element event
+            if(i + index == uiSentences.Count - 2)
+            {
+                actionsMoveDown[i + index] = (new UnityAction(delegate { }));
+            }
+            uiSentences[i + index].GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[i + index]);
+        }
+        // remove last actions (left over) | the order is important here for unregistering events!
+        actionsMoveDown.RemoveAt(actionsMoveDown.Count - 1);
+        actionsMoveUp.RemoveAt(actionsMoveUp.Count - 1);
         Destroy(uiGameObject);
         UpdateElementPositioning();
         ScriptEditorManager.NotifyOfChanges();
@@ -126,4 +198,27 @@ public class SentenceLister : MonoBehaviour
         }
         return null;
     }
+
+    private void SwapElements(int idx1, int idx2)
+    {
+        // unregister current events
+        uiSentences[idx1].GetComponent<UIEditorSentence>().UnregisterButtonMoveUpCallback(actionsMoveUp[idx1]);
+        uiSentences[idx1].GetComponent<UIEditorSentence>().UnregisterButtonMoveDownCallback(actionsMoveDown[idx1]);
+        uiSentences[idx2].GetComponent<UIEditorSentence>().UnregisterButtonMoveUpCallback(actionsMoveUp[idx2]);
+        uiSentences[idx2].GetComponent<UIEditorSentence>().UnregisterButtonMoveDownCallback(actionsMoveDown[idx2]);
+        // swap elements
+        GameObject temp = uiSentences[idx1];
+        uiSentences[idx1] = uiSentences[idx2];
+        uiSentences[idx2] = temp;
+        // reregister events
+        uiSentences[idx1].GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[idx1]);
+        uiSentences[idx1].GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[idx1]);
+        uiSentences[idx2].GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[idx2]);
+        uiSentences[idx2].GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[idx2]);
+        // update index and visuals
+        UpdateElementPositioning();
+        // notify of level change
+        ScriptEditorManager.NotifyOfChanges();
+    }
+       
 }

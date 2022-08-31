@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Events;
 
 public class UIEditorSentence : MonoBehaviour
 {
+    public GameObject ButtonMoveUp, ButtonMoveDown;
+
     // reference to the ui lister / innitiator
     public SentenceLister ScriptSentenceLister;
 
@@ -18,6 +21,26 @@ public class UIEditorSentence : MonoBehaviour
     // the attributes of this ui editor sentence
     string sentence;
     List<(int, string)> readings = new List<(int, string)>();
+
+    public void RegisterButtonMoveUpCallback(UnityAction callback)
+    {
+        ButtonMoveUp.GetComponent<Button>().onClick.AddListener(callback);
+    }
+    
+    public void RegisterButtonMoveDownCallback(UnityAction callback)
+    {
+        ButtonMoveDown.GetComponent<Button>().onClick.AddListener(callback);
+    }
+
+    public void UnregisterButtonMoveUpCallback(UnityAction callback)
+    {
+        ButtonMoveUp.GetComponent<Button>().onClick.RemoveListener(callback);
+    }
+
+    public void UnregisterButtonMoveDownCallback(UnityAction callback)
+    {
+        ButtonMoveDown.GetComponent<Button>().onClick.RemoveListener(callback);
+    }
 
     /**
      * <summary>Get the account of readings</summary>

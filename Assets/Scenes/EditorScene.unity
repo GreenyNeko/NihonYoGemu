@@ -560,6 +560,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e402e8cfb7847564bb8ed0e22b388548, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dragManager: {fileID: 0}
   PrefabButtonAddSentence: {fileID: 8489026260137060941, guid: 1d54a29d4228425469c7e969f9c22fe9,
     type: 3}
   PrefabEditorSentence: {fileID: 89932730992039562, guid: 95710f42ca4f58f46bf17f6aa32431aa,
@@ -750,6 +751,7 @@ GameObject:
   - component: {fileID: 188850657}
   - component: {fileID: 188850656}
   - component: {fileID: 188850655}
+  - component: {fileID: 188850658}
   m_Layer: 5
   m_Name: Viewport
   m_TagString: Untagged
@@ -829,6 +831,69 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 188850653}
   m_CullTransparentMesh: 1
+--- !u!114 &188850658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 188850653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ddcddd532681474382169b910d1ad19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swapEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 107780599}
+        m_TargetAssemblyTypeName: SentenceLister, Assembly-CSharp
+        m_MethodName: SwapElements
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  dragStart:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 107780596}
+        m_TargetAssemblyTypeName: UnityEngine.UI.ScrollRect, UnityEngine.UI
+        m_MethodName: set_vertical
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  dragEnd:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 107780596}
+        m_TargetAssemblyTypeName: UnityEngine.UI.ScrollRect, UnityEngine.UI
+        m_MethodName: set_vertical
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  onPointerEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onPointerExit:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &337521702
 GameObject:
   m_ObjectHideFlags: 0
