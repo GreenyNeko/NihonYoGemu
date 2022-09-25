@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
  */
 public class LevelManager : MonoBehaviour
 {
+    public FuriganaData furiganaData;       // Reference to the data about furigana
     public TMPro.TMP_Text SentencesOutput;  // Text element the sentence will be put into
     public GameObject Furiganas;            // Parent of all furigana text elements
     public GameManager ScriptGameManager;   // Reference to the game manager script
@@ -202,28 +203,8 @@ public class LevelManager : MonoBehaviour
                     // place the furigana above the kanji
                     furigana.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, vertexPositions[vertexIndex + 2].x - vertexPositions[vertexIndex + 1].x);
                     furigana.transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2, vertexPositions[vertexIndex + 1].y - 32, furigana.transform.position.z);
-                    // biggest = 26
-                    // smallest = 8
                     // determine furigana size given amount of characters
-                    // currently hardcoded for the best effect
-                    switch (mostKana)
-                    {
-                        case 4:
-                            furigana.fontSize = 12;
-                            break;
-                        case 3:
-                            furigana.fontSize = 16;
-                            break;
-                        case 2:
-                            furigana.fontSize = 20;
-                            break;
-                        case 1:
-                            furigana.fontSize = 26;
-                            break;
-                        default:
-                            furigana.fontSize = 9;
-                            break;
-                    }
+                    furigana.fontSize = furiganaData.GetSizeByCount(mostKana);
                     // if this kanji is marked, color the text red as well, else make it white
                     if (i == progress)
                     {

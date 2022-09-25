@@ -7,6 +7,7 @@ using UnityEngine.Events;
 
 public class UIEditorSentence : MonoBehaviour
 {
+    // references to the move up and down buttons
     public GameObject ButtonMoveUp, ButtonMoveDown;
 
     // reference to the ui lister / innitiator
@@ -15,12 +16,22 @@ public class UIEditorSentence : MonoBehaviour
     // reference to the text element
     public TMP_Text TextSentence;
 
+
+
     // index given to it by uilister
     public int index;
 
+    // reference to the script that handles furigana for editor sentences
+    SentenceFurigana furiganaScript;
     // the attributes of this ui editor sentence
     string sentence;
     List<(int, string)> readings = new List<(int, string)>();
+
+    void Awake()
+    {
+        furiganaScript = GetComponent<SentenceFurigana>();
+        Debug.Log(furiganaScript);
+    }
 
     public void RegisterButtonMoveUpCallback(UnityAction callback)
     {
@@ -57,6 +68,7 @@ public class UIEditorSentence : MonoBehaviour
     {
         this.sentence = sentence;
         TextSentence.SetText(sentence);
+        UpdateFuriganas();
     }
 
     /**
@@ -65,7 +77,7 @@ public class UIEditorSentence : MonoBehaviour
     public void SetKanjiReadings((int, string)[] readings)
     {
         this.readings = new List<(int, string)>(readings);
-        // TODO: integrate the readings into the preview...
+        UpdateFuriganas();
     }
 
     /**
@@ -74,6 +86,7 @@ public class UIEditorSentence : MonoBehaviour
     public void SetKanjiReading(int index, string reading)
     {
         this.readings[index] = (this.readings[index].Item1, reading);
+        UpdateFuriganas();
     }
 
     /**
@@ -82,6 +95,7 @@ public class UIEditorSentence : MonoBehaviour
     public void UpdateReading(int index, string newReading)
     {
         this.readings[index] = (this.readings[index].Item1, newReading);
+        UpdateFuriganas();
     }
 
     /**
@@ -119,5 +133,13 @@ public class UIEditorSentence : MonoBehaviour
     public void Edit()
     {
         ScriptSentenceLister.EditSentence(this);
+    }
+
+    /**
+     * 
+     */
+    private void UpdateFuriganas()
+    {
+        furiganaScript.UpdateFurigana(TextSentence, readings);
     }
 }

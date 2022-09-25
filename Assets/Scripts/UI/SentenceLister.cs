@@ -14,6 +14,7 @@ public class SentenceLister : MonoBehaviour
     List<GameObject> uiSentences = new List<GameObject>();
 
     List<UnityAction> actionsMoveUp = new List<UnityAction>(), actionsMoveDown = new List<UnityAction>();
+
     /**
      * Populate with the existing sentences
      */
@@ -147,18 +148,19 @@ public class SentenceLister : MonoBehaviour
 
     void UpdateElementPositioning()
     {
-        for(int i = 0; i < uiSentences.Count; i++)
+        float elementHeight = uiSentences[0].GetComponent<RectTransform>().rect.height;
+        for (int i = 0; i < uiSentences.Count; i++)
         {
             // if it is an UIEditorSentence object
             if(uiSentences[i].GetComponent<UIEditorSentence>() != null)
             {
                 // set its index
                 uiSentences[i].GetComponent<UIEditorSentence>().index = i;
-            }
-            uiSentences[i].transform.localPosition = new Vector3(uiSentences[i].transform.localPosition.x, -48 * i, uiSentences[i].transform.localPosition.z);
+            } 
+            uiSentences[i].transform.localPosition = new Vector3(uiSentences[i].transform.localPosition.x, -elementHeight * i, uiSentences[i].transform.localPosition.z);
         }
         // update the scrolling size of the parent to fix a unity issue with updating content in a scroll view
-        Content.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, (uiSentences.Count) * 48);
+        Content.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, (uiSentences.Count) * elementHeight);
     }
 
     public void EditSentence(UIEditorSentence uiEditorSentence)

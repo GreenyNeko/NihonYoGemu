@@ -560,7 +560,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e402e8cfb7847564bb8ed0e22b388548, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dragManager: {fileID: 0}
   PrefabButtonAddSentence: {fileID: 8489026260137060941, guid: 1d54a29d4228425469c7e969f9c22fe9,
     type: 3}
   PrefabEditorSentence: {fileID: 89932730992039562, guid: 95710f42ca4f58f46bf17f6aa32431aa,
@@ -2387,7 +2386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.8}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
