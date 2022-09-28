@@ -196,7 +196,7 @@ public class SentenceLister : MonoBehaviour
     public (int, string)[] GetReadings(int index)
     {
         // -1 because the last element is not a UIEditorSentence but the add sentence button
-        if(index > 0 && index < uiSentences.Count - 1)
+        if(index >= 0 && index < uiSentences.Count - 1)
         {
             return uiSentences[index].GetComponent<UIEditorSentence>().GetReadings();
         }
