@@ -85,24 +85,26 @@ public class SentenceLister : MonoBehaviour
         uiSentence.GetComponent<UIEditorSentence>().ScriptSentenceLister = this;
         if (uiSentences.Count - 3 > 0)
         {
-            actionsMoveUp.Add(new UnityAction(() => { SwapElements(uiSentences.Count - 2, uiSentences.Count - 3); }));
+            int fixedInt = uiSentences.Count;
+            actionsMoveUp.Add(new UnityAction(delegate { SwapElements(fixedInt + 1 - 2, fixedInt + 1 - 3); }));
         }
         else
         {
-            actionsMoveUp.Add(new UnityAction(() => { }));
+            actionsMoveUp.Add(new UnityAction(delegate { }));
         }
-        actionsMoveDown.Add(new UnityAction(() => { }));
-        uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[uiSentences.Count - 2]);
-        uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count - 2]);
+        actionsMoveDown.Add(new UnityAction(delegate { }));
+        uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[uiSentences.Count + 1 - 2]);
+        uiSentence.GetComponent<UIEditorSentence>().RegisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count + 1 - 2]);
         uiSentences.Insert(uiSentences.Count - 1, uiSentence);
         UpdateElementPositioning();
         ScriptEditorManager.NotifyOfChanges();
         // update previous move down action
         if(uiSentences.Count > 2)
         {
-            var prevUISentence = uiSentences[uiSentences.Count - 2].GetComponent<UIEditorSentence>();
+            var prevUISentence = uiSentences[uiSentences.Count - 3].GetComponent<UIEditorSentence>();
             prevUISentence.UnregisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count - 3]);
-            actionsMoveDown[uiSentences.Count - 2] = (new UnityAction(() => { SwapElements(uiSentences.Count - 2, uiSentences.Count - 1); }));
+            int fixedInt = uiSentences.Count;
+            actionsMoveDown[uiSentences.Count - 3] = (new UnityAction(delegate { SwapElements(fixedInt - 3, fixedInt - 2); }));
             prevUISentence.RegisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count - 3]);
         }
     }
