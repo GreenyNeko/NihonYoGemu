@@ -242,6 +242,7 @@ public class EditorManager : MonoBehaviour
      */
     public void SaveSentence()
     {
+        sentenceToEdit.UpdateFuriganas();
         NotifyOfChanges();
     }
 
@@ -368,7 +369,7 @@ public class EditorManager : MonoBehaviour
                     backSpaces += " ";
                 }
             }
-            TextSnippet.SetText(frontSpaces + sentence.Substring(Mathf.Clamp(kanjiReading.Item1 - 2, 0, sentence.Length - 1), length) + backSpaces);
+            TextSnippet.SetText(frontSpaces + sentence.Substring(Mathf.Clamp(kanjiReading.Item1 - 2, 0, sentence.Length - 1), Mathf.Min(length, sentence.Length)) + backSpaces);
         }
     }
 

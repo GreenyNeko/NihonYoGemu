@@ -68,7 +68,6 @@ public class UIEditorSentence : MonoBehaviour
     {
         this.sentence = sentence;
         TextSentence.SetText(sentence);
-        UpdateFuriganas();
     }
 
     /**
@@ -77,7 +76,6 @@ public class UIEditorSentence : MonoBehaviour
     public void SetKanjiReadings((int, string)[] readings)
     {
         this.readings = new List<(int, string)>(readings);
-        UpdateFuriganas();
     }
 
     /**
@@ -86,7 +84,6 @@ public class UIEditorSentence : MonoBehaviour
     public void SetKanjiReading(int index, string reading)
     {
         this.readings[index] = (this.readings[index].Item1, reading);
-        UpdateFuriganas();
     }
 
     /**
@@ -95,7 +92,6 @@ public class UIEditorSentence : MonoBehaviour
     public void UpdateReading(int index, string newReading)
     {
         this.readings[index] = (this.readings[index].Item1, newReading);
-        UpdateFuriganas();
     }
 
     /**
@@ -136,9 +132,9 @@ public class UIEditorSentence : MonoBehaviour
     }
 
     /**
-     * 
+     * Update the furigana of this editor sentence
      */
-    private void UpdateFuriganas()
+    public void UpdateFuriganas()
     {
         furiganaScript.UpdateFurigana(TextSentence, readings);
     }
