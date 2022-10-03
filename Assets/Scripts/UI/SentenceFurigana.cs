@@ -55,7 +55,7 @@ public class SentenceFurigana : MonoBehaviour
                 Vector3[] vertexPositions = TextSentence.mesh.vertices;
                 // place the furigana above the kanji
                 furiganaChildren[i].GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, vertexPositions[vertexIndex + 2].x - vertexPositions[vertexIndex + 1].x);
-                furiganaChildren[i].transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2, vertexPositions[vertexIndex + 1].y + 13, furiganaChildren[i].transform.position.z);
+                furiganaChildren[i].transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2 - 10, vertexPositions[vertexIndex + 1].y + 13, furiganaChildren[i].transform.position.z);
             }
         }
 

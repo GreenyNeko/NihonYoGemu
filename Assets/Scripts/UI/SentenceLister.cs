@@ -16,17 +16,49 @@ public class SentenceLister : MonoBehaviour
     List<UnityAction> actionsMoveUp = new List<UnityAction>(), actionsMoveDown = new List<UnityAction>();
 
     /**
+     * <summary>Returns an array of the sentences</summary>
+     */
+    public List<string> GetSentences()
+    {
+        // converts the gameobjects to the strings contained in their UIEditorSentences
+        return uiSentences.ConvertAll<string>(x =>
+        {
+            if (x.GetComponent<UIEditorSentence>() != null)
+            {
+                return x.GetComponent<UIEditorSentence>().TextSentence.text;
+            }
+            else
+            {
+                return "";
+            }
+        });
+    }
+
+    /**
+     * <summary>Returns an array of readings of the xths sentence</summary>
+     */
+    public (int, string)[] GetReadings(int index)
+    {
+        // -1 because the last element is not a UIEditorSentence but the add sentence button
+        if(index >= 0 && index < uiSentences.Count - 1)
+        {
+            return uiSentences[index].GetComponent<UIEditorSentence>().GetReadings();
+        }
+        return null;
+    }
+
+    /**
      * Populate with the existing sentences
      */
     public void Populate(Level level)
     {
         // create sentence objects
         int kanjiCount = 0;
-        for(int i = 0; i < level.GetSentenceCount(); i++)
+        for (int i = 0; i < level.GetSentenceCount(); i++)
         {
             GameObject uiSentence = Instantiate(PrefabEditorSentence, Content.transform);
             uiSentence.GetComponent<UIEditorSentence>().ScriptSentenceLister = this;
-            
+
             if (i > 0)
             {
                 int a = i;
@@ -73,6 +105,7 @@ public class SentenceLister : MonoBehaviour
         GameObject buttonAddSentence = Instantiate(PrefabButtonAddSentence, Content.transform);
         buttonAddSentence.GetComponent<ButtonAddSentence>().ScriptSentenceLister = this;
         uiSentences.Add(buttonAddSentence);
+        UpdateFurigana();
     }
 
     /**
@@ -99,7 +132,7 @@ public class SentenceLister : MonoBehaviour
         UpdateElementPositioning();
         ScriptEditorManager.NotifyOfChanges();
         // update previous move down action
-        if(uiSentences.Count > 2)
+        if (uiSentences.Count > 2)
         {
             var prevUISentence = uiSentences[uiSentences.Count - 3].GetComponent<UIEditorSentence>();
             prevUISentence.UnregisterButtonMoveDownCallback(actionsMoveDown[uiSentences.Count - 3]);
@@ -116,7 +149,7 @@ public class SentenceLister : MonoBehaviour
         uiSentences.RemoveAt(index);
         bool lastElement = index == uiSentences.Count - 2;
         // if last element was deleted
-        if(lastElement && uiSentences.Count > 1)
+        if (lastElement && uiSentences.Count > 1)
         {
             // unregister down event of the new last element
             uiSentences[index - 1].GetComponent<UIEditorSentence>().UnregisterButtonMoveDownCallback(actionsMoveDown[index - 1]);
@@ -134,7 +167,7 @@ public class SentenceLister : MonoBehaviour
             // register the correct ones respectively
             uiSentences[i + index].GetComponent<UIEditorSentence>().RegisterButtonMoveUpCallback(actionsMoveUp[i + index]);
             // update last element event
-            if(i + index == uiSentences.Count - 2)
+            if (i + index == uiSentences.Count - 2)
             {
                 actionsMoveDown[i + index] = (new UnityAction(delegate { }));
             }
@@ -154,17 +187,20 @@ public class SentenceLister : MonoBehaviour
         for (int i = 0; i < uiSentences.Count; i++)
         {
             // if it is an UIEditorSentence object
-            if(uiSentences[i].GetComponent<UIEditorSentence>() != null)
+            if (uiSentences[i].GetComponent<UIEditorSentence>() != null)
             {
                 // set its index
                 uiSentences[i].GetComponent<UIEditorSentence>().index = i;
-            } 
+            }
             uiSentences[i].transform.localPosition = new Vector3(uiSentences[i].transform.localPosition.x, -elementHeight * i, uiSentences[i].transform.localPosition.z);
         }
         // update the scrolling size of the parent to fix a unity issue with updating content in a scroll view
         Content.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, (uiSentences.Count) * elementHeight);
     }
 
+    /**
+     * Tell the editor manager that the given sentence will be edited
+     */
     public void EditSentence(UIEditorSentence uiEditorSentence)
     {
         // pass information to editor to edit
@@ -172,35 +208,14 @@ public class SentenceLister : MonoBehaviour
     }
 
     /**
-     * <summary>Returns an array of the sentences</summary>
+     * Update the furigana of each sentence
      */
-    public List<string> GetSentences()
+    public void UpdateFurigana()
     {
-        // converts the gameobjects to the strings contained in their UIEditorSentences
-        return uiSentences.ConvertAll<string>(x =>
+        for(int i = 0; i < uiSentences.Count - 1; i++)
         {
-            if (x.GetComponent<UIEditorSentence>() != null)
-            {
-                return x.GetComponent<UIEditorSentence>().TextSentence.text;
-            }
-            else
-            {
-                return "";
-            }
-        });
-    }
-
-    /**
-     * <summary>Returns an array of readings of the xths sentence</summary>
-     */
-    public (int, string)[] GetReadings(int index)
-    {
-        // -1 because the last element is not a UIEditorSentence but the add sentence button
-        if(index >= 0 && index < uiSentences.Count - 1)
-        {
-            return uiSentences[index].GetComponent<UIEditorSentence>().GetReadings();
+            uiSentences[i].GetComponent<UIEditorSentence>().UpdateFuriganas();
         }
-        return null;
     }
 
     private void SwapElements(int idx1, int idx2)
