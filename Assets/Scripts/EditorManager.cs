@@ -27,7 +27,7 @@ public class EditorManager : MonoBehaviour
     public Button ButtonSave;
 
     // references to sentence editor elements
-    public TMPro.TMP_Text TextSnippet;
+    public TMPro.TMP_Text[] TextSnippets;
     public TMPro.TMP_InputField InputSentence;
     public TMPro.TMP_InputField InputReading;
 
@@ -341,35 +341,19 @@ public class EditorManager : MonoBehaviour
         {
             var kanjiReading = sentenceToEdit.GetReading(currentReading);
             InputReading.SetTextWithoutNotify(kanjiReading.Item2);
-            // show a snippet of the sentence with the kanji centralized
-            // ex. abcdefg
-            // 1: "  abc" 0=>pos-2,5+(pos-2)<5, 2 spaces front
-            // 2: " abcd" 1=>pos-2,4, 1 space front
-            // 3: "abcde" 2=>pos-2,else
-            // 4: "bcdef" 3=>pos-2,else
-            // 5: "cdefg" 4=>pos-2,else
-            // 6: "defg " 5=>pos-2,4 + 1 sapce
-            // 7: "efg  " 6=>pos-2,3 + 2 spaces
-            int length = 5;
-            int pos = kanjiReading.Item1;
-            string frontSpaces = "", backSpaces = "";
-            if(pos - 2 < 0) // fill front with spaces
+
+            for(int i = 0; i < 5; i++)
             {
-                length = 5 + pos - 2;
-                for(int i = 0; i < Mathf.Abs(pos - 2); i++)
+                // no index error
+                if(kanjiReading.Item1 - 2 + i >= 0 && kanjiReading.Item1 - 2 + i < sentence.Length)
                 {
-                    frontSpaces += " ";
+                    TextSnippets[i].SetText(sentence.Substring(kanjiReading.Item1 - 2 + i, 1));
+                }
+                else
+                {
+                    TextSnippets[i].SetText("");
                 }
             }
-            if(sentence.Length - pos - 2 + 5 < 0) // fill back with spaces
-            {
-                length = 2 * sentence.Length - pos - 2 + 5;
-                for (int i = 0; i < Mathf.Abs(length); i++)
-                {
-                    backSpaces += " ";
-                }
-            }
-            TextSnippet.SetText(frontSpaces + sentence.Substring(Mathf.Clamp(kanjiReading.Item1 - 2, 0, sentence.Length - 1), Mathf.Min(length, sentence.Length)) + backSpaces);
         }
     }
 
