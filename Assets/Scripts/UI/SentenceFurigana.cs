@@ -53,9 +53,16 @@ public class SentenceFurigana : MonoBehaviour
                 TMP_CharacterInfo charInfo = TextSentence.textInfo.characterInfo[charIdx];
                 int vertexIndex = charInfo.vertexIndex;
                 Vector3[] vertexPositions = TextSentence.mesh.vertices;
+                // manually fix the offset that happens on the second line
+                int xOffset = 0;
+                // significantly below so probably on the lower line
+                if(vertexPositions[vertexIndex].y < vertexPositions[0].y - 10)
+                {
+                    xOffset = -18;
+                }
                 // place the furigana above the kanji
                 furiganaChildren[i].GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, vertexPositions[vertexIndex + 2].x - vertexPositions[vertexIndex + 1].x);
-                furiganaChildren[i].transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2 - 10, vertexPositions[vertexIndex + 1].y + 13, furiganaChildren[i].transform.position.z);
+                furiganaChildren[i].transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2 - 10 + xOffset, vertexPositions[vertexIndex + 1].y + 13, furiganaChildren[i].transform.position.z);
             }
         }
 
