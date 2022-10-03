@@ -25,6 +25,11 @@ public class SentenceFurigana : MonoBehaviour
      */
     public void UpdateFurigana(TMP_Text TextSentence, List<(int, string)> readings)
     {
+        StartCoroutine("ScheduleFuriganaUpdate", (TextSentence, readings));
+    }
+
+    private void UpdateFuriganaInternal(TMP_Text TextSentence, List<(int, string)> readings)
+    {
         // needed for getting mesh information
         TextSentence.ForceMeshUpdate();
         int childCount = furiganaParent.transform.childCount;
@@ -53,18 +58,17 @@ public class SentenceFurigana : MonoBehaviour
                 TMP_CharacterInfo charInfo = TextSentence.textInfo.characterInfo[charIdx];
                 int vertexIndex = charInfo.vertexIndex;
                 Vector3[] vertexPositions = TextSentence.mesh.vertices;
-                // manually fix the offset that happens on the second line
-                int xOffset = 0;
-                // significantly below so probably on the lower line
-                if(vertexPositions[vertexIndex].y < vertexPositions[0].y - 10)
-                {
-                    xOffset = -18;
-                }
+
                 // place the furigana above the kanji
                 furiganaChildren[i].GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, vertexPositions[vertexIndex + 2].x - vertexPositions[vertexIndex + 1].x);
-                furiganaChildren[i].transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2 - 10 + xOffset, vertexPositions[vertexIndex + 1].y + 13, furiganaChildren[i].transform.position.z);
+                furiganaChildren[i].transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2, vertexPositions[vertexIndex + 1].y + 13, furiganaChildren[i].transform.position.z);
             }
         }
+    }
 
+    IEnumerator ScheduleFuriganaUpdate((TMP_Text,List<(int,string)>) data)
+    {
+        yield return new WaitForEndOfFrame();
+        UpdateFuriganaInternal(data.Item1, data.Item2);
     }
 }

@@ -30,7 +30,6 @@ public class UIEditorSentence : MonoBehaviour
     void Awake()
     {
         furiganaScript = GetComponent<SentenceFurigana>();
-        Debug.Log(furiganaScript);
     }
 
     public void RegisterButtonMoveUpCallback(UnityAction callback)
