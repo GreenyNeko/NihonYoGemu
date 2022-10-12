@@ -6,7 +6,7 @@ using UnityEngine.Events;
  * This script allows you to define unity events that are called when the mouse enters or leaves the object.
  * Useful for tooltips for example
  */
-public class OnMouseOver : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ScriptOnMouseOver : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public UnityEvent<bool> callOnMouseOver = new UnityEvent<bool>(); // shows a unity event part in the inspector
    
@@ -23,6 +23,9 @@ public class OnMouseOver : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
      */
     public void OnPointerExit(PointerEventData eventData)
     {
-        callOnMouseOver.Invoke(false);
+        if (eventData.fullyExited)
+        {
+            callOnMouseOver.Invoke(false);
+        }
     }
 }
