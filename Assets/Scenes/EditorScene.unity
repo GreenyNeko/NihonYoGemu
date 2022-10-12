@@ -3768,7 +3768,6 @@ MonoBehaviour:
   LevelEditorMenu: {fileID: 446124837}
   SentenceEditorMenu: {fileID: 1252522037}
   UnsavedChangesWindow: {fileID: 169160805}
-  ButtonSaveSentence: {fileID: 1232020628}
   InputLevelName: {fileID: 1942227669}
   InputAuthorName: {fileID: 1205527191}
   ButtonSaveInfo: {fileID: 1477680874}
@@ -3776,6 +3775,8 @@ MonoBehaviour:
   TextFeedbackInfo: {fileID: 1761801598}
   TextFeedbackSentence: {fileID: 1191150958}
   ButtonSave: {fileID: 77184266}
+  ButtonLeave: {fileID: 1118114303}
+  ButtonEditInfo: {fileID: 1490232529}
   TextSnippets:
   - {fileID: 349139996}
   - {fileID: 602657731}
@@ -3784,6 +3785,9 @@ MonoBehaviour:
   - {fileID: 731090952}
   InputSentence: {fileID: 398678587}
   InputReading: {fileID: 1766364431}
+  ButtonSaveSentence: {fileID: 1232020628}
+  ButtonReadingPrev: {fileID: 881608881}
+  ButtonReadingNext: {fileID: 1343630193}
   ScriptSentenceLister: {fileID: 107780599}
 --- !u!1 &1118114301
 GameObject:
@@ -4403,6 +4407,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1115124749}
+        m_TargetAssemblyTypeName: EditorManager, Assembly-CSharp
+        m_MethodName: UpdateGeneralUI
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &1232020631
 MonoBehaviour:
@@ -8163,6 +8179,18 @@ MonoBehaviour:
       - m_Target: {fileID: 446124837}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1115124749}
+        m_TargetAssemblyTypeName: EditorManager, Assembly-CSharp
+        m_MethodName: UpdateGeneralUI
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

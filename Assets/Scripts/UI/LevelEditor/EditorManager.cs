@@ -14,8 +14,7 @@ public class EditorManager : MonoBehaviour
     public GameObject SentenceEditorMenu;
     public GameObject UnsavedChangesWindow;
 
-    // UI elements
-    public GameObject ButtonSaveSentence;
+    // window level
     public GameObject InputLevelName;
     public GameObject InputAuthorName;
     public GameObject ButtonSaveInfo;
@@ -23,13 +22,17 @@ public class EditorManager : MonoBehaviour
     public GameObject TextFeedbackInfo;
     public GameObject TextFeedbackSentence;
 
-    // reference to save button
+    // reference to general buttons
     public Button ButtonSave;
+    public Button ButtonLeave;
+    public Button ButtonEditInfo;
 
     // references to sentence editor elements
     public TMPro.TMP_Text[] TextSnippets;
     public TMPro.TMP_InputField InputSentence;
     public TMPro.TMP_InputField InputReading;
+    public GameObject ButtonSaveSentence;
+    public Button ButtonReadingPrev, ButtonReadingNext;
 
     // reference to sentence lister
     public SentenceLister ScriptSentenceLister;
@@ -194,6 +197,7 @@ public class EditorManager : MonoBehaviour
         InputSentence.SetTextWithoutNotify(sentence);
         UpdateReading();
         UpdateButtonSaveSentence();
+        UpdateGeneralUI(false);
     }
 
     /**
@@ -201,7 +205,6 @@ public class EditorManager : MonoBehaviour
      */
     public void UpdateSentence(string NewSentence)
     {
-        string prevSentence = sentenceToEdit.TextSentence.text;
         int kanjiCountPrev = 0;
         // needed for context
         for(int i = 0; i < this.prevSentence.Length; i++)
@@ -323,6 +326,16 @@ public class EditorManager : MonoBehaviour
     }
 
     /**
+     * <summary>Update the UI to prevent and misunderstand general UI elements during sentence editing</summary>
+     */
+    public void UpdateGeneralUI(bool interactable)
+    {
+        ButtonSave.interactable = interactable;
+        ButtonLeave.interactable = interactable;
+        ButtonEditInfo.interactable = interactable;
+    }
+
+    /**
      * <summary>Updates the info fields for the level</summary>
      */
     public void UpdateLevelInfoInputFields()
@@ -339,7 +352,10 @@ public class EditorManager : MonoBehaviour
         string sentence = sentenceToEdit.TextSentence.text;
         if(sentenceToEdit.GetReadingCount() > 0)
         {
+            InputReading.interactable = true;
             var kanjiReading = sentenceToEdit.GetReading(currentReading);
+            ButtonReadingPrev.interactable = currentReading > 0;
+            ButtonReadingNext.interactable = currentReading < sentenceToEdit.GetReadingCount() - 1;
             InputReading.SetTextWithoutNotify(kanjiReading.Item2);
 
             for(int i = 0; i < 5; i++)
@@ -354,6 +370,13 @@ public class EditorManager : MonoBehaviour
                     TextSnippets[i].SetText("");
                 }
             }
+        }
+        else
+        {
+            // no readings disable relevant fields
+            InputReading.interactable = false;
+            ButtonReadingPrev.interactable = false;
+            ButtonReadingNext.interactable = false;
         }
     }
 
