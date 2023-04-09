@@ -20,13 +20,13 @@ This also means that you have to delete characters that you don't see. This migh
 
 The game creates meta files for the levels to speed up loading times and reduce RAM usage. To reload levels you can either delete the meta files before start or delete the meta files of choice and then press F5 or Shift-R. This will cause a soft reload, recreating missing meta files, loading new levels and reloading meta files with parser errors. Additionally if you press Shift-F5 / Ctrl-F5 or Shift-Ctrl-R the game will do a hard reload. In this case, it will recreate a new meta file for every level it finds.
 
-### How to get Levels
+## How to get Levels
 
-## Download ChatGPT extra levels
+### Download ChatGPT extra levels
 
 Thanks to ChatGPT's capability to create new stories you can now download some levels at this [github repository](https://github.com/GreenyNeko/ChatGPT_NYLs/)
 
-## How To create Levels
+### How To create Levels
 
 Go into the editor and create a new level. You can check existing levels to learn about how it's done.
 When sharing levels make sure to send the .nyl file.
