@@ -1136,6 +1136,10 @@ public class EditorManager : MonoBehaviour
         string fileInput = InputFileName.GetComponent<TMPro.TMP_InputField>().text;
         string authorInput = InputAuthorName.GetComponent<TMPro.TMP_InputField>().text;
         string levelInput = InputLevelName.GetComponent<TMPro.TMP_InputField>().text;
+        string resolutionXInput = InputResolutionX.GetComponent<TMPro.TMP_InputField>().text;
+        string resolutionYInput = InputResolutionY.GetComponent<TMPro.TMP_InputField>().text;
+        string inputOffsetXInput = InputInputOffsetX.GetComponent<TMPro.TMP_InputField>().text;
+        string inputOffsetYInput = InputInputOffsetY.GetComponent<TMPro.TMP_InputField>().text;
         string warning = "";
         if (fileInput.Length <= 0)
         {
@@ -1153,6 +1157,16 @@ public class EditorManager : MonoBehaviour
         {
             interactable = false;
             warning = "Level name is empty\nレベル名無し。";
+        }
+        if(resolutionXInput.Length == 0 || resolutionYInput.Length == 0)
+        {
+            interactable = false;
+            warning = "Resolution values cannot be empty.\n解像度の値を空にすることはできない。";
+        }
+        if (inputOffsetXInput.Length == 0 || inputOffsetYInput.Length == 0)
+        {
+            interactable = false;
+            warning = "Input offset values cannot be empty.\n入力オフセット値を空にすることはできない。";
         }
         // level name contains characters incompatible with windows names
         Match match = Regex.Match(levelInput, "^([a-zA-Z0-9_ ]|-)+$");
