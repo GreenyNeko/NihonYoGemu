@@ -124,16 +124,16 @@ public class EditorManager : MonoBehaviour
             currBackgroundTexture.LoadImage(currLevel.pages[0].backgrounImageData);
             currBackgroundSprite = Sprite.Create(currBackgroundTexture, new Rect(0, 0, currBackgroundTexture.width, currBackgroundTexture.height), new Vector2(0.5f, 0.5f));
             SetBackgroundImage(currBackgroundSprite);
+            // level offset
+            Vector2 offset = (new Vector2(Screen.width, -Screen.height) - new Vector2(currLevel.nativeX, -currLevel.nativeY)) / 2; // - new Vector2(50, -50)
+            // update input position
+            InputField.transform.localPosition = new Vector3(currLevel.inputOffsetX + offset.x, -currLevel.inputOffsetY + offset.y, 0);
         }
         else
         {
             InputResolutionX.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(Screen.width.ToString());
             InputResolutionY.GetComponent<TMPro.TMP_InputField>().SetTextWithoutNotify(Screen.height.ToString());
         }
-        // level offset
-        Vector2 offset = (new Vector2(Screen.width, -Screen.height) - new Vector2(currLevel.nativeX, -currLevel.nativeY)) / 2; // - new Vector2(50, -50)
-        // update input position
-        InputField.transform.localPosition = new Vector3(currLevel.inputOffsetX + offset.x, -currLevel.inputOffsetY + offset.y, 0);
         // update resolution marker
         ResolutionMarker.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, int.Parse(InputResolutionX.GetComponent<TMPro.TMP_InputField>().text));
         ResolutionMarker.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, int.Parse(InputResolutionY.GetComponent<TMPro.TMP_InputField>().text));
