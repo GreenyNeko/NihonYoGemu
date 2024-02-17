@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
+using UnityEngine.UI;
 
 public class LevelSelectManager : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class LevelSelectManager : MonoBehaviour
     public GameObject UILeaderboard;
     public GameObject UIPlayButton;
     public GameObject UIModButton;
+    public GameObject BackgroundImage;
 
     // used to update UI elemnets on start
     public TextScoreMultiplier TextScoreMultiplierScript;
@@ -19,6 +21,8 @@ public class LevelSelectManager : MonoBehaviour
     Level loadedLevel;                  // the level information needed for the game
     string selectedLevelName;           // the level selected to be played
     bool editorFlag;                    // are we selecting a level for the editor?
+    Sprite backgroundSprite;
+    Texture2D backgroundTexture;
 
     // Start is called before the first frame update
     void Start()
@@ -54,6 +58,15 @@ public class LevelSelectManager : MonoBehaviour
         LevelLoader.SoftReloadLevels();
     }
 
+    private void OnDisable()
+    {
+        if (BackgroundImage && BackgroundImage.GetComponent<Image>().sprite != null)
+        {
+            Destroy(backgroundSprite);
+            Destroy(backgroundTexture);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -65,11 +78,24 @@ public class LevelSelectManager : MonoBehaviour
     }
 
     /**
-    * Set the current selected level
-    */
-    public void SetSelectedLevelByName(string name)
+     * set selected level and set background from respective meta
+     */
+    public void SelectLevel(string name)
     {
         selectedLevelName = name;
+        LevelMeta meta = LevelLoader.GetLevelMetaByFileName(name);
+        if(BackgroundImage.GetComponent<Image>().sprite != null)
+        {
+            Destroy(backgroundSprite);
+            Destroy(backgroundTexture);
+        }
+        if(meta.GetPageData().backgrounImageData != null)
+        {
+            backgroundTexture = new Texture2D(1, 1);
+            backgroundTexture.LoadImage(meta.GetPageData().backgrounImageData);
+            backgroundSprite = Sprite.Create(backgroundTexture, new Rect(0, 0, backgroundTexture.width, backgroundTexture.height), new Vector2(0.5f, 0.5f));
+            BackgroundImage.GetComponent<Image>().sprite = backgroundSprite;
+        }
     }
 
     /**
@@ -125,6 +151,8 @@ public class LevelSelectManager : MonoBehaviour
      */
     public void CreateLevel()
     {
+        // now load the selected input method
+        JapaneseDictionary.CreateKanaFromInputFileId(0);
         string empty = "";
         MemoryStream memoryStream = new MemoryStream();
         using (BinaryWriter writer = new BinaryWriter(memoryStream))

@@ -27,36 +27,63 @@ public class LevelLoader : MonoBehaviour
     }
 
     /**
+     * Returns the level meta given the filename
+     */
+    public static LevelMeta GetLevelMetaByFileName(string fileName)
+    {
+        return levelMetas.Find(meta => meta.GetFileName() == fileName);
+    }
+
+    /**
      * Loads a level given the name
      * return null on error
      */
     public static Level LoadLevelByName(string name)
     {
-        Level level = null;
-        using (StreamReader streamReader = new StreamReader("Levels/" + name + ".nyl"))
+        /*
+        sing (BinaryWriter streamWriter = new BinaryWriter(new FileStream("Levels/" + levelName + ".nyl", FileMode.CreateNew)))
         {
-            level = new Level(name);
-            while (!streamReader.EndOfStream)
-            {
-                string line = streamReader.ReadLine();
-                if (line.StartsWith("["))
-                {
-                    if (line.Substring(1, line.IndexOf('=') - 1) == "author")
-                    {
-                        level.Author = line.Substring(line.IndexOf('=') + 1, line.Length - line.IndexOf('=') - 2);
-                    }
-                }
-                else
-                {
-                    level.AddLine(line);
-                }
-            }
+            string version
+            string levelname
+            string author
+            int nativeX
+            int nativeY
+            int scaleMode
+            int pages
+
+            Page:
+            int backgroundImageDataLength;
+            Byte[] backgroundImageData
+            int scaleMode;
+            int sentenceObjects;
+
+            SentenceData:
+            float x
+            float y
+            float width
+            float height
+            string text;
+            float textSize;
+            float outlineSize;
+            bool color;
+            bool vertical;
+            string[] furigana;
         }
-        level.DeriveStats();
-        // invalid level
-        if(level.ParseLevel() != 0)
+         */
+        // load level
+        Level level = null;
+        using (BinaryReader streamReader = new BinaryReader(new FileStream("Levels/" + name + ".nyl", FileMode.Open)))
         {
-            return null;
+            string version = streamReader.ReadString();                                     // version
+            if (version == "NYLv2")
+            {
+                level = LoadLevelVersion2(streamReader, name);
+            }
+            else
+            {
+                Debug.LogWarning("Version mismatch");
+                return level;
+            }
         }
         return level;
     }
@@ -66,31 +93,11 @@ public class LevelLoader : MonoBehaviour
      */
     public static void ReloadLevelByName(string name)
     {
-        Level level = null;
-        using (StreamReader streamReader = new StreamReader("Levels/" + name + ".nyl"))
-        {
-            level = new Level(name);
-            while (!streamReader.EndOfStream)
-            {
-                string line = streamReader.ReadLine();
-                if (line.StartsWith("["))
-                {
-                    if (line.Substring(1, line.IndexOf('=') - 1) == "author")
-                    {
-                        level.Author = line.Substring(line.IndexOf('=') + 1, line.Length - line.IndexOf('=') - 2);
-                    }
-                }
-                else
-                {
-                    level.AddLine(line);
-                }
-            }
-        }
-        level.DeriveStats();
+        Level level = LoadLevelByName(name);
         // update meta
         for(int i = 0; i < levelMetas.Count; i++)
         {
-            if(levelMetas[i].GetLevelName() == name)
+            if(levelMetas[i].GetFileName() == name)
             {
                 levelMetas[i] = LevelMeta.CreateFromLevel(level);
             }
@@ -98,9 +105,9 @@ public class LevelLoader : MonoBehaviour
     }
 
     /**
-     * This reloads all levels that have a parsing error or are missing metas, creates them  and returns the progress with the following schema:
+     * <summary>This reloads all levels that have a parsing error or are missing metas, creates them  and returns the progress with the following schema:
      * (state, file name, amount of loaded files, total files to load)
-     * The state is 0, if it's loading a meta file, 1 if loading a level and 2 if generating a meta file.
+     * The state is 0, if it's loading a meta file, 1 if loading a level and 2 if generating a meta file.</summary>
      */
     public static IEnumerator SoftReloadLevels()
     {
@@ -114,7 +121,7 @@ public class LevelLoader : MonoBehaviour
         {
             string name = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
             // check if this meta has been loaded already
-            LevelMeta levelMeta = levelMetas.Find((m) => { return m.GetLevelName() == name; });
+            LevelMeta levelMeta = levelMetas.Find((m) => { return m.GetFileName() == name; });
             if (levelMeta != null)
             {
                 // check if the loaded meta has an error
@@ -137,7 +144,7 @@ public class LevelLoader : MonoBehaviour
                 using (BinaryReader binaryReader = new BinaryReader(File.Open("Levels/" + fileInfo.Name, FileMode.Open)))
                 {
                     // load data from file
-                    string startStr = binaryReader.ReadString();
+                    string startStr = binaryReader.ReadString();         // file string
                     // check meta tag
                     if (!startStr.StartsWith("NYLM"))
                     {
@@ -145,27 +152,62 @@ public class LevelLoader : MonoBehaviour
                         // skip this file
                         continue;
                     }
-                    ushort version = binaryReader.ReadUInt16();
+                    ushort version = binaryReader.ReadUInt16();         // version
                     if (version != LevelMeta.Version)
                     {
                         // skip this file if the version mismatches with the current
-                        // this forces a creationg of a new meta file
+                        // this forces a creation of a new meta file
                         continue;
                     }
-                    float difficulty = binaryReader.ReadSingle();
-                    uint levelLength = binaryReader.ReadUInt32();
-                    uint kanjiCount = binaryReader.ReadUInt32();
-                    uint sentenceLength = binaryReader.ReadUInt32();
-                    uint sentences = binaryReader.ReadUInt32();
-                    sbyte parserResult = binaryReader.ReadSByte();
-                    string author = binaryReader.ReadString();
-                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, sentences, parserResult);
+                    string levelName = binaryReader.ReadString();                               // level name
+                    string author = binaryReader.ReadString();                                  // author
+                    float difficulty = binaryReader.ReadSingle();                               // difficulty
+                    uint levelLength = binaryReader.ReadUInt32();                               // totalCharacters
+                    uint kanjiCount = binaryReader.ReadUInt32();                                // total kanjis
+                    uint sentenceLength = binaryReader.ReadUInt32();                            // longest sentence length
+                    uint sentences = binaryReader.ReadUInt32();                                 // # sentences
+                    sbyte parserResult = binaryReader.ReadSByte();                              // parser result
+                    Level.PageData firstPage = new Level.PageData();
+                    int backgroundDataSize = binaryReader.ReadInt32();                          // background image data size
+                    if (backgroundDataSize == 0)
+                    {
+                        binaryReader.ReadBytes(1);
+                        firstPage.backgrounImageData = null;
+                    }
+                    else
+                    {
+                        firstPage.backgrounImageData = binaryReader.ReadBytes(backgroundDataSize); // backgroundImageData
+                    }
+                    int sentenceObjects = binaryReader.ReadInt32();                             // sentence object count
+                    firstPage.sentenceObjects = new List<Level.SentenceData>();
+                    for(int i = 0; i < sentenceObjects; i++)
+                    {
+                        Level.SentenceData sentenceData = new Level.SentenceData();
+                        float x = binaryReader.ReadSingle();
+                        float y = binaryReader.ReadSingle();
+                        float width = binaryReader.ReadSingle();
+                        float height = binaryReader.ReadSingle();
+                        sentenceData.rect = new Rect(x, y, width, height);
+                        sentenceData.text = binaryReader.ReadString();
+                        sentenceData.textSize = binaryReader.ReadInt32();
+                        sentenceData.color = binaryReader.ReadBoolean();
+                        sentenceData.vertical = binaryReader.ReadBoolean();
+                        int furiganas = binaryReader.ReadInt32();
+                        sentenceData.furigana = new string[furiganas];
+                        for(int j = 0; j < furiganas; j++)
+                        {
+                            sentenceData.furigana[j] = binaryReader.ReadString();
+                        }
+                        firstPage.sentenceObjects.Add(sentenceData);
+                    }
+                    levelMeta = new LevelMeta(fileInfo.Name, levelName, difficulty, levelLength, kanjiCount, author, sentenceLength, sentences, parserResult, firstPage);
+                    Debug.Log("addMeta " + levelMeta.GetFileName());
                     levelMetas.Add(levelMeta);
                 }
             }
             catch (EndOfStreamException)
             {
-                Debug.LogWarning("Unabel to read meta file. skipping");
+                Debug.LogWarning("Unable to read meta file. skipping");
                 success = false;
             }
             if (success)
@@ -186,37 +228,10 @@ public class LevelLoader : MonoBehaviour
         {
             string fileName = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
             // if level and meta file don't exist already
-            if (!levels.Exists((level) => { return level.Name == fileName; }) && !levelMetas.Exists((levelMeta) => { return levelMeta.GetLevelName() == fileName; }))
+            if (!levels.Exists((level) => { return level.FileName == fileName; }) && !levelMetas.Exists((levelMeta) => { return levelMeta.GetFileName() == fileName; }))
             {
                 // create a new level structure
-                Level level = new Level(fileName);
-                using (StreamReader streamReader = new StreamReader("Levels/" + fileInfo.Name))
-                {
-                    // read all sentences
-                    while (!streamReader.EndOfStream)
-                    {
-                        string line = streamReader.ReadLine();
-                        // handle comments
-                        if (line.StartsWith("#"))
-                        {
-                            continue;
-                        }
-                        // handle attribute tags
-                        if (line.StartsWith("["))
-                        {
-                            if (line.Substring(1, line.IndexOf('=') - 1) == "author")
-                            {
-                                level.Author = line.Substring(line.IndexOf('=') + 1, line.Length - line.IndexOf('=') - 2);
-                            }
-
-                        }
-                        else
-                        {
-                            // load line as sentence
-                            level.AddLine(line);
-                        }
-                    }
-                }
+                Level level = LoadLevelByName(fileName);
                 // return progress
                 yield return (1, fileInfo.Name, ++count, files);
                 // create meta file
@@ -230,6 +245,104 @@ public class LevelLoader : MonoBehaviour
                 yield return (2, fileInfo.Name, ++count, files);
             }
         }
+    }
+
+    /**
+     * <summary>Loads levels of version 2, this allows the loading functions to be changed later down the line.</summary>
+     */
+    public static Level LoadLevelVersion2(BinaryReader binaryReader, string name)
+    {
+        string debugData = "";
+        Level level;
+        string levelName = binaryReader.ReadString();                                   // levelName
+        debugData += levelName;
+        string author = binaryReader.ReadString();                                      // author
+        debugData += author;
+        level = new Level(name, levelName, author);
+        level.nativeX = binaryReader.ReadInt32();                                       // native x
+        debugData += level.nativeX.ToString();
+        level.nativeY = binaryReader.ReadInt32();                                       // native y
+        debugData += level.nativeY.ToString();
+        level.scaleMode = binaryReader.ReadByte();                                      // scale mode
+        debugData += level.scaleMode.ToString();
+        level.inputOffsetX = binaryReader.ReadInt32();                                // input field offset x
+        debugData += level.nativeX.ToString();
+        level.inputOffsetY = binaryReader.ReadInt32();                                // input field offset y
+        debugData += level.nativeY.ToString();
+        int pages = binaryReader.ReadInt32();                                           // #pages
+        debugData += pages.ToString();
+        Debug.Log("pages");
+        for (int i = 0; i < pages; i++)
+        {
+            // read page
+            Level.PageData pageData = new Level.PageData();
+            int backgroundDataLength = binaryReader.ReadInt32();                        // backgroundImageDataLength
+            debugData += backgroundDataLength.ToString();
+            if (backgroundDataLength == 0)
+            {
+                debugData += binaryReader.ReadBytes(1)[0].ToString();
+                pageData.backgrounImageData = null;
+            }
+            else
+            {
+                pageData.backgrounImageData = binaryReader.ReadBytes(backgroundDataLength); // backgroundImageData
+                debugData += pageData.backgrounImageData.ToString();
+            }
+            pageData.scaleMode = binaryReader.ReadByte();                              // background scale mode
+            debugData += pageData.scaleMode.ToString();
+            pageData.sentenceObjects = new List<Level.SentenceData>();
+            int sentenceObjects = binaryReader.ReadInt32();                             // #sentenceobjects
+            debugData += sentenceObjects.ToString();
+            Debug.Log("sentences");
+            for (int j = 0; j < sentenceObjects; j++)
+            {
+                Level.SentenceData sentenceData = new Level.SentenceData();
+                float x = binaryReader.ReadSingle();                                    // read rect x
+                debugData += x.ToString();
+                float y = binaryReader.ReadSingle();                                    // read rect y
+                debugData += y.ToString();
+                float width = binaryReader.ReadSingle();                                // read rect width
+                debugData += width.ToString();
+                float height = binaryReader.ReadSingle();                               // read rect height
+                debugData += height.ToString();
+                sentenceData.rect = new Rect(x, y, width, height);
+                sentenceData.text = binaryReader.ReadString();                          // sentence text
+                debugData += sentenceData.text;
+                sentenceData.textSize = binaryReader.ReadSingle();                      // text size
+                debugData += sentenceData.textSize.ToString();
+                sentenceData.outlineSize = binaryReader.ReadSingle();                   // outline size
+                debugData += sentenceData.outlineSize.ToString();
+                // packed byte, alignment (4), bold (1), v(1), color(1), unused(1)
+                byte abvc = binaryReader.ReadByte();
+                sentenceData.alignment = (byte)(abvc >> 4);
+                sentenceData.bold = (abvc & 8) == 8;
+                sentenceData.vertical = (abvc & 4) == 4;
+                sentenceData.color = (abvc & 2) == 2;
+                debugData += sentenceData.alignment.ToString();
+                debugData += sentenceData.bold.ToString();
+                debugData += sentenceData.color.ToString();
+                debugData += sentenceData.vertical.ToString();
+                int furiganas = binaryReader.ReadInt32();                               // furiganas
+                debugData += furiganas.ToString();
+                sentenceData.furigana = new string[furiganas];
+                for (int k = 0; k < furiganas; k++)
+                {
+                    sentenceData.furigana[k] = binaryReader.ReadString();               // furigana
+                    debugData += sentenceData.furigana[k];
+                }
+                pageData.sentenceObjects.Add(sentenceData);
+            }
+            level.pages.Add(pageData);
+        }
+        Debug.Log(debugData);
+        // derive stats
+        level.DeriveStats();
+        // invalid level
+        if (level.ParseLevel() != 0)
+        {
+            return null;
+        }
+        return level;
     }
 
     /**
@@ -251,37 +364,10 @@ public class LevelLoader : MonoBehaviour
         {
             string fileName = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
             // if level doesn't exist already
-            if (!levels.Exists((level) => { return level.Name == fileName; }))
+            if (!levels.Exists((level) => { return level.FileName == fileName; }))
             {
                 // create a new level structure
-                Level level = new Level(fileName);
-                using (StreamReader streamReader = new StreamReader("Levels/" + fileInfo.Name))
-                {
-                    // read all sentences
-                    while (!streamReader.EndOfStream)
-                    {
-                        string line = streamReader.ReadLine();
-                        // handle comments
-                        if (line.StartsWith("#"))
-                        {
-                            continue;
-                        }
-                        // handle attribute tags
-                        if (line.StartsWith("["))
-                        {
-                            if (line.Substring(1, line.IndexOf('=') - 1) == "author")
-                            {
-                                level.Author = line.Substring(line.IndexOf('=') + 1, line.Length - line.IndexOf('=') - 2);
-                            }
-
-                        }
-                        else
-                        {
-                            // load line as sentence
-                            level.AddLine(line);
-                        }
-                    }
-                }
+                Level level = LoadLevelByName(fileName);
                 // return progress
                 yield return (1, fileInfo.Name, ++count, files);
                 // create meta file
@@ -317,11 +403,11 @@ public class LevelLoader : MonoBehaviour
             bool success = true;
             try
             {
+                LevelMeta levelMeta;
                 using (BinaryReader binaryReader = new BinaryReader(File.Open("Levels/" + fileInfo.Name, FileMode.Open)))
                 {
-                    LevelMeta levelMeta;
                     // load data from file
-                    string startStr = binaryReader.ReadString();
+                    string startStr = binaryReader.ReadString();         // file string
                     // check meta tag
                     if (!startStr.StartsWith("NYLM"))
                     {
@@ -329,21 +415,55 @@ public class LevelLoader : MonoBehaviour
                         // skip this file
                         continue;
                     }
-                    ushort version = binaryReader.ReadUInt16();
+                    ushort version = binaryReader.ReadUInt16();         // version
                     if (version != LevelMeta.Version)
                     {
                         // skip this file if the version mismatches with the current
                         // this forces a creationg of a new meta file
                         continue;
                     }
-                    float difficulty = binaryReader.ReadSingle();
-                    uint levelLength = binaryReader.ReadUInt32();
-                    uint kanjiCount = binaryReader.ReadUInt32();
-                    uint sentenceLength = binaryReader.ReadUInt32();
-                    uint sentences = binaryReader.ReadUInt32();
-                    sbyte parserResult = binaryReader.ReadSByte();
-                    string author = binaryReader.ReadString();
-                    levelMeta = new LevelMeta(name, difficulty, levelLength, kanjiCount, author, sentenceLength, sentences, parserResult);
+                    string levelName = binaryReader.ReadString();                               // level name
+                    string author = binaryReader.ReadString();                                  // author
+                    float difficulty = binaryReader.ReadSingle();                               // difficulty
+                    uint levelLength = binaryReader.ReadUInt32();                               // totalCharacters
+                    uint kanjiCount = binaryReader.ReadUInt32();                                // total kanjis
+                    uint sentenceLength = binaryReader.ReadUInt32();                            // longest sentence length
+                    uint sentences = binaryReader.ReadUInt32();                                 // # sentences
+                    sbyte parserResult = binaryReader.ReadSByte();                              // parser result
+                    Level.PageData firstPage = new Level.PageData();
+                    int backgroundDataSize = binaryReader.ReadInt32();                          // background image data size
+                    if (backgroundDataSize == 0)
+                    {
+                        binaryReader.ReadBytes(1);
+                        firstPage.backgrounImageData = null;
+                    }
+                    else
+                    {
+                        firstPage.backgrounImageData = binaryReader.ReadBytes(backgroundDataSize); // backgroundImageData
+                    }
+                    int sentenceObjects = binaryReader.ReadInt32();                             // sentence object count
+                    firstPage.sentenceObjects = new List<Level.SentenceData>();
+                    for (int i = 0; i < sentenceObjects; i++)
+                    {
+                        Level.SentenceData sentenceData = new Level.SentenceData();
+                        float x = binaryReader.ReadSingle();
+                        float y = binaryReader.ReadSingle();
+                        float width = binaryReader.ReadSingle();
+                        float height = binaryReader.ReadSingle();
+                        sentenceData.rect = new Rect(x, y, width, height);
+                        sentenceData.text = binaryReader.ReadString();
+                        sentenceData.textSize = binaryReader.ReadInt32();
+                        sentenceData.color = binaryReader.ReadBoolean();
+                        sentenceData.vertical = binaryReader.ReadBoolean();
+                        int furiganas = binaryReader.ReadInt32();
+                        sentenceData.furigana = new string[furiganas];
+                        for (int j = 0; j < furiganas; j++)
+                        {
+                            sentenceData.furigana[j] = binaryReader.ReadString();
+                        }
+                        firstPage.sentenceObjects.Add(sentenceData);
+                    }
+                    levelMeta = new LevelMeta(name, levelName, difficulty, levelLength, kanjiCount, author, sentenceLength, sentences, parserResult, firstPage);
                     levelMetas.Add(levelMeta);
                 }
             }
@@ -370,38 +490,12 @@ public class LevelLoader : MonoBehaviour
         foreach (FileInfo fileInfo in directoryInfo.GetFiles("*.nyl"))
         {
             string fileName = fileInfo.Name.Substring(0, fileInfo.Name.IndexOf('.'));
+            Debug.Log(fileName);
             // if level and meta file don't exist already
-            if (!levels.Exists((level) => { return level.Name == fileName; }) && !levelMetas.Exists((levelMeta) => { return levelMeta.GetLevelName() == fileName; }))
+            if (!levels.Exists((level) => { return level.FileName == fileName; }) && !levelMetas.Exists((levelMeta) => { return levelMeta.GetFileName() == fileName; }))
             {
                 // create a new level structure
-                Level level = new Level(fileName);
-                using (StreamReader streamReader = new StreamReader("Levels/" + fileInfo.Name))
-                {
-                    // read all sentences
-                    while (!streamReader.EndOfStream)
-                    {
-                        string line = streamReader.ReadLine();
-                        // handle comments
-                        if(line.StartsWith("#"))
-                        {
-                            continue;
-                        }
-                        // handle attribute tags
-                        if (line.StartsWith("["))
-                        {
-                            if (line.Substring(1, line.IndexOf('=') - 1) == "author")
-                            {
-                                level.Author = line.Substring(line.IndexOf('=') + 1, line.Length - line.IndexOf('=') - 2);
-                            }
-
-                        }
-                        else
-                        {
-                            // load line as sentence
-                            level.AddLine(line);
-                        }
-                    }
-                }
+                Level level = LoadLevelByName(fileName);
                 // return progress
                 yield return (1, fileInfo.Name, ++count, files);
                 // create meta file

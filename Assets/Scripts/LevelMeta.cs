@@ -9,21 +9,24 @@ using System.IO;
 public class LevelMeta
 {
     // used to find file differences
-    public const ushort Version = 3;
+    public const ushort Version = 4;
     
-    string name;                // file name
+    string fileName;            // file name
+    string levelName;           // level name
     string author;              // level author
     float difficulty;           // level difficulty
     uint totalCharacters;       // total characters in the level
     uint totalKanjis;           // total kanjis in the level
     uint longestSentence;       // the longest sentence
-    uint sentences;         // how many sentences the level has
+    uint sentences;             // how many sentences the level has
     sbyte parserResult;         // the result of the level parsing
+    Level.PageData pageData;    // first page of the level
 
     // private constructor, to create levelmetas without information first internally
     private LevelMeta()
     {
-        name = "";
+        fileName = "";
+        levelName = "";
         author = "";
         difficulty = 0;
         totalCharacters = 0;
@@ -36,9 +39,10 @@ public class LevelMeta
     /**
      * Create a new level meta given necessary parameters
      */
-    public LevelMeta(string name, float difficulty, uint totalCharacters, uint totalKanjis, string author, uint longestSentence, uint sentences, sbyte parserResult)
+    public LevelMeta(string fileName, string levelName, float difficulty, uint totalCharacters, uint totalKanjis, string author, uint longestSentence, uint sentences, sbyte parserResult, Level.PageData pageData)
     {
-        this.name = name;
+        this.fileName = fileName;
+        this.levelName = levelName;
         this.difficulty = difficulty;
         this.totalCharacters = totalCharacters;
         this.totalKanjis = totalKanjis;
@@ -46,6 +50,15 @@ public class LevelMeta
         this.longestSentence = longestSentence;
         this.sentences = sentences;
         this.parserResult = parserResult;
+        this.pageData = pageData;
+    }
+
+    /**
+ * Returns the level name
+ */
+    public string GetFileName()
+    {
+        return fileName;
     }
 
     /**
@@ -53,7 +66,7 @@ public class LevelMeta
      */
     public string GetLevelName()
     {
-        return name;
+        return levelName;
     }
 
     /**
@@ -129,6 +142,14 @@ public class LevelMeta
     }
 
     /**
+     * Returns the page data of the first page of the level
+     */
+    public Level.PageData GetPageData()
+    {
+        return pageData;
+    }
+
+    /**
      * Creates a levelmeta given a level
      */
     public static LevelMeta CreateFromLevel(Level level)
@@ -136,26 +157,59 @@ public class LevelMeta
         // create meta
         LevelMeta levelMeta = new LevelMeta();
         // pass information from level
-        levelMeta.name = level.Name;
+        levelMeta.fileName = level.FileName;
+        levelMeta.levelName = level.LevelName;
         levelMeta.totalCharacters = (uint)level.GetLevelLength();
+        levelMeta.author = level.Author;
         levelMeta.difficulty = level.GetLevelDifficulty();
         levelMeta.totalKanjis = (uint)level.GetKanjiCount();
-        levelMeta.author = level.Author;
         levelMeta.longestSentence = (uint)level.GetLongestSentenceLength();
         levelMeta.sentences = (uint)level.GetSentenceCount();
         levelMeta.parserResult = (sbyte)level.ParseLevel();
+        levelMeta.pageData = level.pages[0];
         // create the file in the system
-        using(BinaryWriter binaryWriter = new BinaryWriter(File.Open("Levels/" + levelMeta.name + ".nyl.meta", FileMode.Create)))
+        using(BinaryWriter binaryWriter = new BinaryWriter(File.Open("Levels/" + levelMeta.fileName + ".nyl.meta", FileMode.Create)))
         {
             binaryWriter.Write("NYLMv");
             binaryWriter.Write(Version);
+            binaryWriter.Write(levelMeta.levelName);
+            binaryWriter.Write(levelMeta.author);
             binaryWriter.Write(levelMeta.difficulty);
             binaryWriter.Write(levelMeta.totalCharacters);
             binaryWriter.Write(levelMeta.totalKanjis);
             binaryWriter.Write(levelMeta.longestSentence);
             binaryWriter.Write(levelMeta.sentences);
             binaryWriter.Write(levelMeta.parserResult);
-            binaryWriter.Write(levelMeta.author);
+            // write first page
+            if(levelMeta.pageData.backgrounImageData == null)
+            {
+                binaryWriter.Write(0);
+                binaryWriter.Write('\0');
+            }
+            else
+            {
+                binaryWriter.Write(levelMeta.pageData.backgrounImageData.Length);
+                binaryWriter.Write(levelMeta.pageData.backgrounImageData);
+            }
+            // write sentences
+            binaryWriter.Write(levelMeta.pageData.sentenceObjects.Count);
+            for (int j = 0; j < levelMeta.pageData.sentenceObjects.Count; j++)
+            {
+                Level.SentenceData sentenceData = levelMeta.pageData.sentenceObjects[j];
+                binaryWriter.Write(sentenceData.rect.x);
+                binaryWriter.Write(sentenceData.rect.y);
+                binaryWriter.Write(sentenceData.rect.width);
+                binaryWriter.Write(sentenceData.rect.height);
+                binaryWriter.Write(sentenceData.text);
+                binaryWriter.Write(sentenceData.textSize);
+                binaryWriter.Write(sentenceData.color);
+                binaryWriter.Write(sentenceData.vertical);
+                binaryWriter.Write(sentenceData.furigana.Length);
+                for (int k = 0; k < sentenceData.furigana.Length; k++)
+                {
+                    binaryWriter.Write(sentenceData.furigana[k]);
+                }
+            }
         }
         return levelMeta;
     }

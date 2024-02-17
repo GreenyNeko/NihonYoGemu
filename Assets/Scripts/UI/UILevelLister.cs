@@ -97,11 +97,11 @@ public class UILevelLister : MonoBehaviour
             // only update if a new level has been selected
             if (prevSelected >= 0 && uiLevelObjects[prevSelected].gameObject != level.gameObject)
             {
-                ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+                ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().GetFileName());
             }
             else if (prevSelected < 0)
             {
-                ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().TextLevelName.text);
+                ScriptUILeaderboard.UpdateLeaderboard(level.GetComponent<UILevel>().GetFileName());
             }
         }
     }
@@ -393,6 +393,7 @@ public class UILevelLister : MonoBehaviour
             // copy over attributes from meta
             UILevel uiLevel = UILevelObject.GetComponent<UILevel>();
             uiLevel.ScriptLevelSelectManager = ScriptLevelSelectManager;
+            uiLevel.SetFileName(meta.GetFileName());
             uiLevel.SetAuthorName(meta.GetAuthor());
             uiLevel.SetLevelName(meta.GetLevelName());
             uiLevel.SetDifficulty(meta.GetDifficulty());
@@ -455,5 +456,10 @@ public class UILevelLister : MonoBehaviour
         LoadingScreen.SetActive(false);
         // recreate ui
         createUILevelObjects();
+        if(uiLevelObjects.Count >= 1)
+        {
+            FlagLevelAsSelected(uiLevelObjects[0]);
+            ScriptLevelSelectManager.SelectLevel(uiLevelObjects[0].GetComponent<UILevel>().GetFileName());
+        }
     }
 }

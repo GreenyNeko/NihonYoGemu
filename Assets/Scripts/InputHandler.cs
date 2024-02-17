@@ -2,20 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.Events;
 
 /**
  * Script that handles input during the game play
  */
 public class InputHandler : MonoBehaviour
 {
-    public GameManager ScriptGameManager; // the game manager to tell it about the player input
-    public GameObject LevelManager; // the level manager to progress through the level
-    public GameObject TextDisplay;  // where the player's input is displayed
+    public bool levelEditor;
+    public TMP_Text targetText;
+    //public GameManager ScriptGameManager; // the game manager to tell it about the player input
+    //public GameObject LevelManager; // the level manager to progress through the level
+    public UnityEvent OnEscapeButton;
+    public UnityEvent OnEnterButton;
+
 
     string currentInput = "";       // the current input of the player
     float internCooldown = 0.5f;    // time to wait until holding a key counts as multiple inputs
     char lastChar = (char)0;        // the last character that was read
 
+    int id = 0;
+
+    void Start()
+    {
+        id = System.Threading.Thread.CurrentThread.ManagedThreadId;    
+    }
 
     // Update is called once per frame
     void Update()
@@ -123,19 +134,20 @@ public class InputHandler : MonoBehaviour
             }
             else if(Input.GetKeyDown(KeyCode.Escape))
             {
-                ScriptGameManager.PauseGame(!ScriptGameManager.IsPaused());
+                handleEscape();
             }
         }
+    }
+
+    public void SetCurrentInput(string newInput)
+    {
+        currentInput = newInput;
+        targetText.text = newInput;
     }
 
     // handles any ASCII character input
     void handleInput(char character)
     {
-        if(ScriptGameManager.IsPaused())
-        {
-            return;
-        }
-
         // if japanese keyboard input
         if(false)
         {
@@ -147,6 +159,7 @@ public class InputHandler : MonoBehaviour
             if (lastChar != character)
             {
                 internCooldown = 0.5f;
+                Debug.Log(currentInput);
                 if(currentInput.Length < 13)
                 {
                     currentInput += character;
@@ -158,48 +171,33 @@ public class InputHandler : MonoBehaviour
                 if (internCooldown > 0) return;
                 currentInput += character;
             }
-            // update the displayed text given the input and the input method converting it to hiragana
-            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput, true));
+            if(id != System.Threading.Thread.CurrentThread.ManagedThreadId)
+            {
+                Debug.Log("not on main thread...");
+            }
+            targetText.text = JapaneseDictionary.ConvertRomajiToKana(currentInput, true);//OnTextChanged.Invoke(JapaneseDictionary.ConvertRomajiToKana(currentInput, true));
         }
     }
 
     // handles backspace, deletes characters if there are any
     void handleBackspace()
     {
-        if (ScriptGameManager.IsPaused())
-        {
-            return;
-        }
-
         if (currentInput.Length > 0)
         {
             currentInput = currentInput.Substring(0, currentInput.Length - 1);
-            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput, true));
+            //TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput, true));
+            targetText.text = JapaneseDictionary.ConvertRomajiToKana(currentInput, true);//OnTextChanged.Invoke(JapaneseDictionary.ConvertRomajiToKana(currentInput, true));
         }
     }
 
     // handles enter
     void handleEnter()
     {
-        if (ScriptGameManager.IsPaused())
-        {
-            return;
-        }
+        OnEnterButton.Invoke();
+    }
 
-        // if the game is running
-        if (ScriptGameManager.IsRunning())
-        {
-            // confirm current Input and check for correctness
-            LevelManager.GetComponent<LevelManager>().Progress(currentInput);
-            // reset input
-            currentInput = "";
-            // update display
-            TextDisplay.GetComponent<TMP_Text>().SetText(JapaneseDictionary.ConvertRomajiToKana(currentInput, false));
-        }
-        else
-        {
-            // if in end screen leave game
-            ScriptGameManager.OnEnd();
-        }
+    void handleEscape()
+    {
+        OnEscapeButton.Invoke();
     }
 }

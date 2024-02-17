@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
+using UnityEngine.UI;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -11,6 +12,11 @@ public class MainMenuManager : MonoBehaviour
     public GameObject SettingsMenu;
     public GameObject ExitMenu;
     public GameObject DonationMenu;
+    public Image BackgroundImage;
+    public float BackgroundTime;
+    Sprite backgroundSprite;
+    Texture2D backgroundTexture;
+    float backgroundTimer;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +25,9 @@ public class MainMenuManager : MonoBehaviour
         SettingsMenu.SetActive(false);
         ExitMenu.SetActive(false);
         DonationMenu.SetActive(false);
+        backgroundTimer = 0;
+        // random based on real time instead of program
+        Random.InitState(System.DateTime.Now.Second);
     }
 
     // Update is called once per frame
@@ -28,6 +37,38 @@ public class MainMenuManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ExitMenu.SetActive(true);
+        }
+        // update background
+        if (backgroundTimer > 0)
+        {
+            backgroundTimer -= Time.deltaTime;
+        }
+        else
+        {
+            backgroundTimer = BackgroundTime;
+            if(BackgroundImage.sprite != null)
+            {
+                DestroyImmediate(backgroundSprite);
+                DestroyImmediate(backgroundTexture);
+            }
+            backgroundTexture = new Texture2D(1, 1);
+            Level.PageData pageData = null;
+            if (LevelLoader.GetLevelMetaCount() > 0)
+            {
+                pageData = LevelLoader.GetLevelMetaByIdx((int)(Random.value * LevelLoader.GetLevelMetaCount())).GetPageData();
+            }
+            if(pageData != null && pageData.backgrounImageData != null)
+            {
+                backgroundTexture.LoadImage(pageData.backgrounImageData);
+                backgroundSprite = Sprite.Create(backgroundTexture, new Rect(0, 0, backgroundTexture.width, backgroundTexture.height), new Vector2(0.5f, 0.5f));
+                BackgroundImage.sprite = backgroundSprite;
+                BackgroundImage.color = Color.white;
+            }
+            else
+            {
+                BackgroundImage.sprite = null;
+                BackgroundImage.color = new Color(0.1921569f, 0.3019608f, 0.4745098f);
+            }
         }
     }
 

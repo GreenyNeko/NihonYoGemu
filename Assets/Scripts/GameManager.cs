@@ -82,8 +82,16 @@ public class GameManager : MonoBehaviour
      */
     public void PauseGame(bool pause)
     {
-        paused = pause;
-        PauseMenu.SetActive(pause);
+        if(running)
+        {
+            paused = pause;
+            PauseMenu.SetActive(pause);
+        }
+    }
+
+    public void TogglePause()
+    {
+        PauseGame(!paused);
     }
 
     /**
@@ -167,6 +175,8 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            // save highscore
+            SaveHighscore(LevelName);
             EndGame();  
         }
     }
@@ -176,8 +186,6 @@ public class GameManager : MonoBehaviour
      */
     public void EndGame()
     {
-        // save highscore
-        SaveHighscore(LevelName);
         // reset the game
         score = 0;
         correctKanji = 0;

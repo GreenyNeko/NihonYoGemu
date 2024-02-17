@@ -11,22 +11,28 @@ using UnityEngine.SceneManagement;
  */
 public class LevelManager : MonoBehaviour
 {
-    public FuriganaData furiganaData;       // Reference to the data about furigana
-    public TMPro.TMP_Text SentencesOutput;  // Text element the sentence will be put into
-    public GameObject Furiganas;            // Parent of all furigana text elements
     public GameManager ScriptGameManager;   // Reference to the game manager script
     public Image ProgressImage;             // Reference to the image showing level progress
+    public TMPro.TMP_Text InputText;
 
-    public GameObject FuriganaPrefab;       // prefab to create new furigana elements
+    public Transform SentenceParent;
+    public GameObject SentenceObjectPrefab;
+    public Image BackgroundImage;
 
     Level loadedLevel;
-    int currLine;                           // tracks the current line
+    int currPage;
+    int currSentence;
+    int currKanji;
     int progress;                           // tracks how many kanjis been answered
-    int prevLinesKanjiCount;                // sum of kanjis in previous lines
-    int kanjiCount;                         // how many kanjis have been answered
+    List<(string,int)> currKanjis;
+    List<GameObject> sentenceObjects;
+    List<Sprite> BackgroundSprites;
+    List<Texture2D> BackgroundTextures;
 
     void Awake()
     {
+        sentenceObjects = new List<GameObject>();
+        currKanjis = new List<(string,int)>();
         // read from data
         int sceneIdx = -1;
         string selectedLevelName;
@@ -55,36 +61,52 @@ public class LevelManager : MonoBehaviour
             }
             SceneManagerPlus.LoadScene("LevelSelect", memoryStream.ToArray());
         }
+        BackgroundTextures = new List<Texture2D>();
+        BackgroundSprites = new List<Sprite>();
+        // load backgrounds
+        for(int i = 0; i < loadedLevel.pages.Count; i++)
+        {
+            BackgroundTextures.Add(new Texture2D(1, 1));
+            BackgroundTextures[i].LoadImage(loadedLevel.pages[i].backgrounImageData);
+            BackgroundSprites.Add(Sprite.Create(BackgroundTextures[i], new Rect(0, 0, BackgroundTextures[i].width, BackgroundTextures[i].height), new Vector2(0.5f, 0.5f)));
+        }
+        // scale level
+        ScaleLevel();
+        // add offset to input field position
+        InputText.transform.parent.localPosition = new Vector3(loadedLevel.inputOffsetX, -loadedLevel.inputOffsetY, 0);
+    }
+
+    void OnDisable()
+    {
+        for (int i = 0; i < loadedLevel.pages.Count; i++)
+        {
+            Destroy(BackgroundTextures[i]);
+            Destroy(BackgroundSprites[i]);
+        }
+        BackgroundTextures.Clear();
+        BackgroundSprites.Clear();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        currLine = 0;
-        kanjiCount = 0;
-        prevLinesKanjiCount = 0;
+        currPage = 0;
+        currSentence = 0;
+        currKanji = 0;
         // calculate score multiplier
-
         // store because we'll need it a lot
         ScriptGameManager.SetScoreMultiplier(ScriptGameManager.Mods.GetModMultiplier());
-        // load furigana elements if furigana mod is active
-        if(ScriptGameManager.Mods.HasFlag(GameMods.Furigana))
-        {
-            // load furigana elements given the maximum kanjis per sentence
-            for (int i = 0; i < loadedLevel.GetMostKanjisPerSentence(); i++)
-            {
-                // we don't need to store a reference, we'll access them through transform.GetChild(...)
-                Instantiate(FuriganaPrefab, Furiganas.transform);
-            }
-        }
-        ScriptGameManager.LevelName = loadedLevel.Name;
+        ScriptGameManager.LevelName = loadedLevel.FileName;
         // level is completed by default
         if (loadedLevel.GetSentenceCount() <= 0)
         {
             ScriptGameManager.OnEnd();
         }
-        updateTextMesh();
-        updateProgressImage();
+        UpdateCurrentKanjis();
+        CreateSentenceObjects();
+        UpdateBackground();
+        UpdateSentenceObjects();
+        UpdateProgressImage();
     }
 
     /**
@@ -92,8 +114,9 @@ public class LevelManager : MonoBehaviour
      */
     public void ResetLevel()
     {
-        currLine = 0;
-        kanjiCount = 0;
+        currPage = 0;
+        currSentence = 0;
+        currKanji = 0;
         progress = 0;
         ScriptGameManager.ResetGame();
         // level is completed by default
@@ -101,32 +124,41 @@ public class LevelManager : MonoBehaviour
         {
             ScriptGameManager.OnEnd();
         }
-        updateTextMesh();
-        updateProgressImage();
+        UpdateCurrentKanjis();
+        ClearPage();
+        CreateSentenceObjects();
+        UpdateBackground();
+        UpdateSentenceObjects();
+        UpdateProgressImage();
     }
-
 
     /**
      * Progresses the level, passes performance to game manager and starts the end screen also leaves level given what game manager does (See. GameManager.OnEnd)
      */
-    public void Progress(string input)
+    public void Progress()
     {
-        if(ScriptGameManager.IsRunning())
+        if(!ScriptGameManager.IsRunning())
+        {
+            ScriptGameManager.OnEnd();
+        }
+        else
         {
             // determine score
-            // are ther kanjis in the current sentence
-            if (loadedLevel.GetKanjiFromSentence(currLine).Length > 0)
+            // are there kanjis in the current sentence
+            Level.SentenceData sentenceData = loadedLevel.pages[currPage].sentenceObjects[currSentence];
+            // if this sentence has furigana
+            if (sentenceData.furigana.Length > 0)
             {
                 // clean up input (input should be what we see
-                string playerFurigana = JapaneseDictionary.ConvertRomajiToKana(input, false);
+                string playerFurigana = InputText.text;
                 // compare current input vs kanji reading
-                if (playerFurigana == loadedLevel.GetFuriganaFromKanji(kanjiCount))
+                if (playerFurigana == sentenceData.furigana[currKanji])
                 {
                     ScriptGameManager.OnCorrect();
                 }
                 else
                 {
-                    if (JapaneseDictionary.StringInReadings(playerFurigana, loadedLevel.GetKanjiFromSentence(currLine)[progress]))
+                    if (JapaneseDictionary.StringInReadings(playerFurigana, currKanjis[currKanji].Item1[0]))
                     {
                         ScriptGameManager.OnSloppy();
                     }
@@ -135,80 +167,184 @@ public class LevelManager : MonoBehaviour
                         ScriptGameManager.OnMiss();
                     }
                 }
-                kanjiCount++;
             }
+
+            // undo marking
+            sentenceObjects[currSentence].GetComponent<LevelSentenceObject>().UnmarkCharacter();
+            Transform furiganaObject = sentenceObjects[currSentence].transform.GetChild(0).GetComponent<OrientedText>().FuriganaHandler.GetComponent<SentenceFurigana>().furiganaParent;
+            if(furiganaObject.childCount > 0)
+            {
+                furiganaObject.GetChild(0).GetComponent<TMPro.TMP_Text>().color = sentenceObjects[currSentence].GetComponent<LevelSentenceObject>().DisplayedText.color;
+            }
+            
 
             // progress
             progress++;
-
-            if (progress >= loadedLevel.GetKanjiFromSentence(currLine).Length)
+            currKanji++;
+            if(currKanji >= sentenceData.furigana.Length)
             {
-                // update the previous kanji counting the current kanjiCount after the last line been completed
-                prevLinesKanjiCount = kanjiCount;
-                currLine++;
-                // end of level
-                if (currLine >= loadedLevel.GetSentenceCount())
+                // all kanji read, next sentence
+                currKanji = 0;
+                // skip to the next kanji or end of page
+                do
                 {
-                    ScriptGameManager.OnEnd();
-                    return;
+                    currSentence++;
+                } while (currSentence < loadedLevel.pages[currPage].sentenceObjects.Count && loadedLevel.pages[currPage].sentenceObjects[currSentence].furigana.Length == 0);
+                // end of page
+                if(currSentence >= loadedLevel.pages[currPage].sentenceObjects.Count)
+                {
+                    // all sentences read, next page
+                    currSentence = 0;
+                    currPage++;
+                    if(currPage >= loadedLevel.pages.Count)
+                    {
+                        currPage = 0;
+                        ClearPage();
+                        UpdateBackground();
+                        ScriptGameManager.OnEnd();
+                        return;
+                    }
+                    UpdateBackground();
+                    ClearPage();
+                    CreateSentenceObjects();
                 }
-                progress = 0;
+                UpdateCurrentKanjis();
             }
-            updateTextMesh();
-            updateProgressImage();
+
+            UpdateSentenceObjects();
+            UpdateProgressImage();
         }
     }
 
-    // updates the text, furigana and which kanji is marked
-    void updateTextMesh()
+    void UpdateBackground()
     {
-        // are there more lines?
-        if(currLine < loadedLevel.GetSentenceCount())
+        if (BackgroundSprites[currPage] != null)
         {
-            // get the currline after the increment
-            string line = loadedLevel.GetLine(currLine);
-            SentencesOutput.SetText(line);
-            SentencesOutput.ForceMeshUpdate();
-            int kanjiCount = loadedLevel.GetKanjiFromSentence(currLine).Length;
+            BackgroundImage.GetComponent<Image>().color = Color.white;
+            BackgroundImage.GetComponent<Image>().sprite = BackgroundSprites[currPage];
+            float width = 0, height = 0;
+            Vector2 diff;
+            float scaleFactor = 1;
+            Debug.Log("image scale mode" + loadedLevel.pages[currPage].scaleMode);
+            switch (loadedLevel.pages[currPage].scaleMode)
+            {
+                case 4:
+                    // scale
+                    width = Screen.width;
+                    height = Screen.height;
+                    break;
+                case 3:
+                    // scale up
+                    // determine if scaling up or keep
+                    width = loadedLevel.nativeX > Screen.width ? loadedLevel.nativeX : Screen.width;
+                    height = loadedLevel.nativeY > Screen.height ? loadedLevel.nativeY : Screen.height;
+                    break;
+                case 2:
+                    // keep aspect ratio
+                    // determine smaller difference between width and height
+                    diff = new Vector2(Screen.width, Screen.height) - BackgroundSprites[currPage].rect.size;
+                    if (diff.x < diff.y)
+                    {
+                        // scale up to screen width
+                        scaleFactor = (float)Screen.width / BackgroundSprites[currPage].rect.width;
+                    }
+                    else
+                    {
+                        // scale up to screen height
+                        scaleFactor = (float)Screen.height / BackgroundSprites[currPage].rect.height;
+                    }
+                    width = BackgroundSprites[currPage].rect.width * scaleFactor;
+                    height = BackgroundSprites[currPage].rect.height * scaleFactor;
+                    break;
+                case 1:
+                    // keep aspect ratio, only scale up
+                    // determine if scaling up or keep
+                    width = loadedLevel.nativeX > Screen.width ? loadedLevel.nativeX : Screen.width;
+                    height = loadedLevel.nativeY > Screen.height ? loadedLevel.nativeY : Screen.height;
+                    // determine scaling factor for the fitting axis
+                    diff = new Vector2(width, height) - BackgroundSprites[currPage].rect.size;
+                    if (diff.x < diff.y)
+                    {
+                        // scale up to screen or native width
+                        scaleFactor = (float)width / BackgroundSprites[currPage].rect.width;
+                    }
+                    else
+                    {
+                        // scale up to screen or native height
+                        scaleFactor = (float)height / BackgroundSprites[currPage].rect.height;
+                    }
+                    // width and height set to sprite's
+                    width = BackgroundSprites[currPage].rect.width * scaleFactor;
+                    height = BackgroundSprites[currPage].rect.height * scaleFactor;
+                    break;
+                default:
+                    // keep scale of image
+                    // width and height set to sprite's
+                    width = loadedLevel.nativeX;
+                    height = loadedLevel.nativeY;
+                    break;
+            }
+            BackgroundImage.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
+            BackgroundImage.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
+            // aligned to top left
+            BackgroundImage.GetComponent<RectTransform>().localPosition = Vector2.zero;
+            // no change to width/height
+            BackgroundImage.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            BackgroundImage.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        }
+        else
+        {
+            BackgroundImage.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
+            BackgroundImage.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
+            BackgroundImage.GetComponent<Image>().color = Color.black;
+            BackgroundImage.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            BackgroundImage.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Screen.width);
+            BackgroundImage.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Screen.height);
+            //BackgroundImage.GetComponent<RectTransform>().SetSize
+        }
+    }
 
+    void ClearPage()
+    {
+        for(int i = 0; i < sentenceObjects.Count; i++)
+        {
+            Destroy(sentenceObjects[i]);
+        }
+        sentenceObjects.Clear();
+    }
+
+    void CreateSentenceObjects()
+    {
+        for (int i = 0; i < loadedLevel.pages[currPage].sentenceObjects.Count; i++)
+        {
+            Level.SentenceData sentenceData = loadedLevel.pages[currPage].sentenceObjects[i];
+            GameObject sentenceObject = Instantiate(SentenceObjectPrefab, SentenceParent);
+            sentenceObject.GetComponent<LevelSentenceObject>().template = false;
+            // convert level coords to ui coords
+            sentenceObject.GetComponent<RectTransform>().anchoredPosition = sentenceData.rect.position - new Vector2(50, -50);
+            sentenceObject.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, sentenceData.rect.width);
+            sentenceObject.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, sentenceData.rect.height);
+            sentenceObject.GetComponent<LevelSentenceObject>().DisplayedText.text = sentenceData.text;
             if(ScriptGameManager.Mods.HasFlag(GameMods.Furigana))
             {
-                // clean up furiganas a.k.a. hide old ones, and show again if updated
-                foreach(Transform child in Furiganas.transform)
+                // update to create furigana
+                sentenceObject.transform.GetChild(0).GetComponent<OrientedText>().FuriganaHandler.GetComponent<SentenceFurigana>().UpdatedSentence(sentenceData.text);
+                // set furigana
+                for (int j = 0; j < sentenceData.furigana.Length; j++)
                 {
-                    child.gameObject.SetActive(false);
-                }
-                int mostKana = 0;
-                // determine length of longest furigana
-                for(int i = 0; i < kanjiCount; i++)
-                {
-                    int tmp = loadedLevel.GetFuriganaFromKanji(prevLinesKanjiCount + i).Length;
-                    if(tmp > mostKana)
+                    TMPro.TMP_Text furigana = sentenceObject.transform.GetChild(0).GetComponent<OrientedText>().FuriganaHandler.GetComponent<SentenceFurigana>().transform.GetChild(j).GetComponent<TMPro.TMP_Text>();
+                    furigana.text = sentenceData.furigana[j];
+                    if (sentenceData.bold)
                     {
-                        mostKana = tmp;
+                        furigana.fontStyle = TMPro.FontStyles.Bold;
                     }
-                }
-                // fill all the furigana texts with contents
-                for (int i = 0; i < kanjiCount; i++)
-                {
-                    Furiganas.transform.GetChild(i).gameObject.SetActive(true);
-                    TMPro.TMP_Text furigana = Furiganas.transform.GetChild(i).GetComponent<TMPro.TMP_Text>();
-                    // get the furigana given the offset of the kanjis of previous sentences
-                    furigana.SetText(loadedLevel.GetFuriganaFromKanji(prevLinesKanjiCount + i));
-                    // get the kanji position
-                    int charIdx = line.IndexOf(loadedLevel.GetKanjiFromSentence(currLine)[i]);
-                    TMPro.TMP_CharacterInfo charInfo = SentencesOutput.textInfo.characterInfo[charIdx];
-                    int vertexIndex = charInfo.vertexIndex;
-                    Vector3[] vertexPositions = SentencesOutput.mesh.vertices;
-                    // place the furigana above the kanji
-                    furigana.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, vertexPositions[vertexIndex + 2].x - vertexPositions[vertexIndex + 1].x);
-                    furigana.transform.localPosition = new Vector3((vertexPositions[vertexIndex + 1].x + vertexPositions[vertexIndex + 2].x) / 2, vertexPositions[vertexIndex + 1].y - 32, furigana.transform.position.z);
-                    // determine furigana size given amount of characters
-                    furigana.fontSize = furiganaData.GetSizeByCount(mostKana);
-                    // if this kanji is marked, color the text red as well, else make it white
-                    if (i == progress)
+                    else
                     {
-                        furigana.color = Color.red;
+                        furigana.fontStyle = TMPro.FontStyles.Normal;
+                    }
+                    if (sentenceData.color)
+                    {
+                        furigana.color = Color.black;
                     }
                     else
                     {
@@ -216,29 +352,159 @@ public class LevelManager : MonoBehaviour
                     }
                 }
             }
-
-            // line not completed yet
-            if (kanjiCount > 0 && progress < kanjiCount)
+            sentenceObject.GetComponent<LevelSentenceObject>().DisplayedText.fontSize = sentenceData.textSize;
+            if (sentenceData.bold)
             {
-                // get current selected kanji and color it
-                int charIdx = line.IndexOf(loadedLevel.GetKanjiFromSentence(currLine)[progress]);
-                TMPro.TMP_CharacterInfo charInfo = SentencesOutput.textInfo.characterInfo[charIdx];
-                int vertexIndex = charInfo.vertexIndex;
-                int meshIndex = charInfo.materialReferenceIndex;
-                Color32[] vertexColors = SentencesOutput.textInfo.meshInfo[meshIndex].colors32;
-                vertexColors[vertexIndex + 0] = new Color(1, 0, 0);
-                vertexColors[vertexIndex + 1] = new Color(1, 0, 0);
-                vertexColors[vertexIndex + 2] = new Color(1, 0, 0);
-                vertexColors[vertexIndex + 3] = new Color(1, 0, 0);
+                sentenceObject.GetComponent<LevelSentenceObject>().DisplayedText.fontStyle = TMPro.FontStyles.Bold;
+            }
+            else
+            {
+                sentenceObject.GetComponent<LevelSentenceObject>().DisplayedText.fontStyle = TMPro.FontStyles.Normal;
+            }
+            if (sentenceData.color)
+            {
+                sentenceObject.GetComponent<LevelSentenceObject>().DisplayedText.color = Color.black;
+                if(sentenceObject.GetComponent<LevelSentenceObject>().inputField != null)
+                {
+                    sentenceObject.GetComponent<LevelSentenceObject>().inputField.textComponent.color = Color.black;
+                }
+            }
+            else
+            {
+                sentenceObject.GetComponent<LevelSentenceObject>().DisplayedText.color = Color.white;
+                if (sentenceObject.GetComponent<LevelSentenceObject>().inputField != null)
+                {
+                    sentenceObject.GetComponent<LevelSentenceObject>().inputField.textComponent.color = Color.white;
+                }
+            }
+            sentenceObject.GetComponentInChildren<OrientedText>().vertical = sentenceData.vertical;
+            sentenceObject.GetComponent<LevelSentenceObject>().sentenceDataIndex = i;
 
-                SentencesOutput.UpdateVertexData(TMPro.TMP_VertexDataUpdateFlags.Colors32);
+            sentenceObjects.Add(sentenceObject);
+        }
+    }
+
+    // updates the text, furigana and which kanji is marked
+    void UpdateSentenceObjects()
+    {
+        if(currKanjis.Count > 0)
+        {
+            sentenceObjects[currSentence].GetComponent<LevelSentenceObject>().MarkCharacter(currKanjis[currKanji].Item2);
+            Transform furiganaObject = sentenceObjects[currSentence].transform.GetChild(0).GetComponent<OrientedText>().FuriganaHandler.GetComponent<SentenceFurigana>().furiganaParent;
+            if(furiganaObject.childCount > 0)
+            {
+                furiganaObject.GetChild(currKanji).GetComponent<TMPro.TMP_Text>().color = new Color(1, 0, 0);
             }
         }
     }
 
     // updates the image showing the level progress
-    void updateProgressImage()
+    void UpdateProgressImage()
     {
-        ProgressImage.fillAmount = (float)(kanjiCount + currLine) / (loadedLevel.GetKanjiCount() + loadedLevel.GetSentenceCount());
+        ProgressImage.fillAmount = ((float)(progress) / loadedLevel.GetKanjiCount());
+    }
+
+    void UpdateCurrentKanjis()
+    {
+        currKanjis.Clear();
+        if(currPage >= loadedLevel.pages.Count || currSentence >= loadedLevel.pages[currPage].sentenceObjects.Count)
+        {
+            return;
+        }
+        for (int i = 0; i < loadedLevel.pages[currPage].sentenceObjects[currSentence].text.Length; i++)
+        {
+            char c = loadedLevel.pages[currPage].sentenceObjects[currSentence].text[i];
+            if (JapaneseDictionary.IsKanji(c.ToString()))
+            {
+                currKanjis.Add((c.ToString(), i));
+            }
+        }
+    }
+
+    void ScaleLevel()
+    {
+        // by default scale 1, scales to full screen
+        // => 1 = Screen.width by Screen.height
+        Vector2 native = new Vector2(loadedLevel.nativeX, loadedLevel.nativeY);
+        Vector2 screen = new Vector2(Screen.width, Screen.height);
+        Vector3 diff = screen - native;
+        float scaleFactorX, scaleFactorY;
+        float resultWidth, resultHeight;
+        Debug.Log(loadedLevel.scaleMode);
+        switch (loadedLevel.scaleMode)
+        {
+            case 4:
+                // scale
+                scaleFactorX = (float)Screen.width / loadedLevel.nativeX;
+                scaleFactorY = (float)Screen.height / loadedLevel.nativeY;
+                SentenceParent.localScale = new Vector3(scaleFactorX, scaleFactorY, 1);
+                break;
+            case 3:
+                // scale up
+                scaleFactorX = Mathf.Max((float)Screen.width / loadedLevel.nativeX, 1f);
+                scaleFactorY = Mathf.Max((float)Screen.height / loadedLevel.nativeY, 1f);
+                SentenceParent.localScale = new Vector3(scaleFactorX, scaleFactorY, 1);
+                break;
+            case 2:
+                // aspect ratio
+                // scale up the smaller axis
+                if (diff.x < diff.y)
+                {
+                    // scale x axis to Screen.width
+                    scaleFactorX = (float)Screen.width / loadedLevel.nativeX;
+                }
+                else
+                {
+                    // scale x axis to Screen.width
+                    scaleFactorX = (float)Screen.height / loadedLevel.nativeY;
+                }
+                SentenceParent.localScale *= scaleFactorX;
+                resultWidth = native.x * scaleFactorX;
+                resultHeight = native.y * scaleFactorX;
+                if(resultWidth < Screen.width)
+                {
+                    SentenceParent.GetComponent<RectTransform>().position += new Vector3((Screen.width - resultWidth) / 2, 0, 0);
+                }
+                else if(resultHeight < Screen.height)
+                {
+                    SentenceParent.GetComponent<RectTransform>().position += new Vector3(0, (Screen.height - resultWidth) / 2, 0);
+                }
+                break;
+            case 1:
+                // aspect ratio, scale up
+                // scale up the smaller axis
+                Debug.Log(diff.x + " " + diff.y);
+                if(diff.x < diff.y)
+                {
+                    // scale x axis to Screen.width
+                    scaleFactorX = (float)Screen.width / loadedLevel.nativeX;
+                }
+                else
+                {
+                    // scale x axis to Screen.width
+                    scaleFactorX = (float)Screen.height / loadedLevel.nativeY;
+                }
+                Debug.Log(scaleFactorX);
+                if(scaleFactorX > 1)
+                {
+                    SentenceParent.localScale *= scaleFactorX;
+                }
+                resultWidth = native.x * scaleFactorX;
+                resultHeight = native.y * scaleFactorX;
+                if (resultWidth < Screen.width)
+                {
+                    SentenceParent.GetComponent<RectTransform>().position += new Vector3((Screen.width - resultWidth) / 2, 0, 0);
+                }
+                else if (resultHeight < Screen.height)
+                {
+                    SentenceParent.GetComponent<RectTransform>().position += new Vector3(0, (Screen.height - resultWidth) / 2, 0);
+                }
+                break;
+            default:
+                // keep
+                // handle offset
+                //SentenceParent.GetComponent<RectTransform>().position -= diff / 2;
+                break;
+        }
     }
 }

@@ -125,6 +125,7 @@ public static class JapaneseDictionary
      */
     public static void CreateKanaFromInputFileId(int fileId)
     {
+        kana.Clear();
         Dictionary<string,string> dict = InputFileHandler.GetDefinition(fileId);
         foreach(string key in dict.Keys)
         {
@@ -226,6 +227,7 @@ public static class JapaneseDictionary
         string result = "";
         // sort kana by length of kana2
         kana.Sort((kana1, kana2) => { return kana1.GetReading().Length.CompareTo(kana2.GetReading().Length); });
+        Debug.Log(kana.Count); // why is this sometimes 0!?!?! not on main thread?
         int maxLength = kana[kana.Count - 1].GetReading().Length;
         // go through the romaji
         for (int i = 0; i <= givenRomaji.Length; i++)

@@ -26,7 +26,7 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
 
     int parserResult;                   // the result of the level parsing
     float timeSinceLastClick;           // used for double click
-
+    string fileName;
 
     // Start is called before the first frame update
     void Start()
@@ -87,6 +87,11 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
         TextLevelName.SetText(name);
     }
 
+    public void SetFileName(string name)
+    {
+        fileName = name;
+    }
+
     /**
      * Sets the difficulty of the level's UI element
      */
@@ -103,6 +108,11 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
         TextLength.SetText(length.ToString());
     }
 
+    public string GetFileName()
+    {
+        return fileName;
+    }
+
     /**
      * When this UILevel should no longer be selected
      */
@@ -117,7 +127,7 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
      */
     public void ReloadLevel()
     {
-        LevelLoader.ReloadLevelByName(TextLevelName.text.ToString());
+        LevelLoader.ReloadLevelByName(fileName);
         LevelFinder.ReloadLevelList();
     }
 
@@ -131,7 +141,7 @@ public class UILevel : MonoBehaviour, IPointerClickHandler
         {
             // select this level
             Panel.GetComponent<Image>().color = colorSelected;
-            ScriptLevelSelectManager.SetSelectedLevelByName(TextLevelName.text);
+            ScriptLevelSelectManager.SelectLevel(fileName);
             LevelFinder.FlagLevelAsSelected(gameObject);
             // double click
             if (timeSinceLastClick < 0.5f)
